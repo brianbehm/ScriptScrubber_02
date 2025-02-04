@@ -2,17 +2,17 @@
   "name": "scriptscrubber",
   "version": "1.0.0",
   "scripts": {
-    "dev": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' vite",
-    "build": "NODE_OPTIONS='--experimental-vm-modules --no-warnings' vite build",
+    "dev": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" vite",
+    "build": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "5.0.3",
-    "svelte": "^5.19.7",
-    "vite": "^6.0.11"
+    "svelte": "5.19.7",
+    "vite": "6.0.11"
   },
   "dependencies": {
-    "jspdf": "^2.5.1"
+    "jspdf": "2.5.1"
   },
   "type": "module"
 }

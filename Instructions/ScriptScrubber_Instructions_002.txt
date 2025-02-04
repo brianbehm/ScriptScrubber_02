@@ -1,0 +1,342 @@
+Below are practical next steps you can take to evolve the MVP into a more powerful and user‐friendly tool. Each step includes ideas, implementation notes, and sample code snippets where relevant.
+
+1. Enhanced Parsing & Handling Special Cases
+
+Right now, the parser (parseScript.js) is fairly simple. You can improve it to handle more complex or edge cases:
+	1.	Bullet Points or Markdown Lists
+	•	Decide whether to ignore them or store them in a separate “notes” block.
+
+// Example snippet for ignoring bullet points:
+if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
+  // Instead of pushing to blocks, either skip or store them as 'notes'
+  blocks.push({ type: 'note', text: trimmedLine.slice(2).trim() });
+  continue;
+}
+
+
+	2.	More Robust Scene Heading Detection
+	•	Check for patterns like INT./EXT. SOMETHING - DAY/NIGHT.
+	•	If you prefer a purely uppercase check, refine it to allow certain punctuation (like INT., EXT., –).
+	3.	Nested or Complex Parentheticals
+	•	E.g., (HAMILTON (whispering): This is tricky).
+	•	If you need real nesting logic, you might need a more advanced parser or carefully manage substring indices.
+	4.	Inline Stage Directions
+	•	Sometimes stage directions appear inline with dialogue, e.g., Hello there (smiling)..
+	•	Decide if you want to split them out as a separate block or keep them inline.
+	5.	Bullet vs. Numbered Lists
+	•	If you have a “pre‐script” section with a numbered list, decide whether it’s included in the final screenplay.
+
+Implementation Tip:
+You could parse the entire text with a Markdown parser (like marked or markdown-it), then transform its AST (Abstract Syntax Tree) into your screenplay blocks. This approach is more complex but might yield cleaner handling of bullet points, headings, etc.
+
+2. In‐Place Editing (WYSIWYG Style)
+
+Right now, the MVP uses a side‐by‐side text editor. If you want direct editing in the rendered screenplay, try:
+	1.	Make Each Block Clickable
+	•	When the user clicks on, say, a dialogue block, replace the <div> with an <input> or <textarea> so they can edit it.
+	2.	Update State on Blur
+	•	Once the user finishes editing, you update that block in the parsedBlocks array, then re‐generate the raw text (or keep only the JSON structure if you prefer).
+
+Example (in ScreenplayView.svelte, concept sketch):
+
+<script>
+  export let blocks = [];
+  import { createEventDispatcher } from 'svelte';
+  
+  const dispatch = createEventDispatcher();
+
+  let editingIndex = null;
+  let editText = "";
+
+  function startEditing(index, currentText) {
+    editingIndex = index;
+    editText = currentText;
+  }
+
+  function finishEditing(index) {
+    dispatch('updateBlock', { index, newText: editText });
+    editingIndex = null;
+  }
+</script>
+
+{#each blocks as block, i}
+  {#if editingIndex === i}
+    <!-- If editing this block, show a textarea -->
+    <textarea
+      bind:value={editText}
+      on:blur={() => finishEditing(i)}
+      autofocus
+    ></textarea>
+  {:else}
+    <!-- Otherwise, normal display -->
+    <div on:dblclick={() => startEditing(i, block.text)}>
+      {#if block.type === 'dialogue'}
+        <div class="dialogue-speaker">{block.speaker}</div>
+        {#if block.parenthetical}
+          <div class="parenthetical">{block.parenthetical}</div>
+        {/if}
+        <div class="dialogue-text">{block.text}</div>
+      {:else if block.type === 'action'}
+        <div class="action">{block.text}</div>
+      {:else if block.type === 'sceneHeading'}
+        <div class="scene-heading">{block.text}</div>
+      {:else if block.type === 'separator'}
+        <div class="separator">&nbsp;</div>
+      {:else}
+        <div class="action">{block.text}</div>
+      {/if}
+    </div>
+  {/if}
+{/each}
+
+Then in App.svelte, handle on:updateBlock to change the parsedBlocks accordingly:
+
+<ScreenplayView
+  {parsedBlocks}
+  on:updateBlock={(e) => {
+    const { index, newText } = e.detail;
+    parsedBlocks[index].text = newText;
+    // Optionally re-parse or re-compute analytics if needed
+  }}
+/>
+
+	Note: If the user changes a line from “action” to “dialogue,” you’ll need logic to detect that and change the block’s type/speaker. This can get complicated quickly.
+
+3. Analytics Charts Integration
+
+You already have basic data. Next, visualize it with Chart.js or ApexCharts. For example, if you install chart.js, you can create a bar or pie chart of word distribution among speakers.
+	1.	Install:
+
+npm install chart.js
+
+
+	2.	Create a new component, e.g., SpeakerChart.svelte:
+
+<script>
+  import { onMount } from 'svelte';
+  import Chart from 'chart.js/auto';
+
+  export let speakersData = []; 
+  // e.g. [{ name: 'HAMILTON', wordCount: 100, wordPct: 25 }, ...]
+
+  let chartCanvas;
+  let chartInstance;
+
+  onMount(() => {
+    chartInstance = new Chart(chartCanvas, {
+      type: 'pie',
+      data: {
+        labels: speakersData.map(sp => sp.name),
+        datasets: [{
+          data: speakersData.map(sp => sp.wordCount),
+          backgroundColor: ['red','blue','green','orange','purple'] // or dynamic
+        }]
+      },
+      options: {
+        // options if needed
+      }
+    });
+  });
+
+  // If data changes dynamically, you might re-render or update the chart
+  $: if (chartInstance && speakersData) {
+    chartInstance.data.labels = speakersData.map(sp => sp.name);
+    chartInstance.data.datasets[0].data = speakersData.map(sp => sp.wordCount);
+    chartInstance.update();
+  }
+</script>
+
+<canvas bind:this={chartCanvas} width="300" height="300"></canvas>
+
+	3.	Use this SpeakerChart.svelte in AnalyticsPanel.svelte:
+
+<script>
+  import SpeakerChart from './SpeakerChart.svelte';
+  // ... other imports
+</script>
+
+<!-- Inside your panel: -->
+<SpeakerChart speakersData={speakersArray} />
+
+Now you have a pie chart (or bar chart) showing word distribution among speakers. You can similarly display line counts or reading‐time comparisons.
+
+4. PDF Export with jsPDF
+
+Option A: Direct PDF Generation
+	1.	Install jspdf:
+
+npm install jspdf
+
+
+	2.	Create a function in App.svelte or a separate helper, e.g. exportPDF.js, that loops over your blocks and writes them to a PDF:
+
+// src/parser/exportPDF.js
+import jsPDF from 'jspdf';
+
+export function exportToPDF(blocks) {
+  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+  let yPos = 50;
+
+  blocks.forEach((block) => {
+    const lineHeight = 14;
+    let text = '';
+    switch (block.type) {
+      case 'sceneHeading':
+        text = block.text;
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        break;
+      case 'dialogue':
+        // Possibly center speaker, indent dialogue, etc.
+        doc.setFontSize(11);
+        doc.setFont(undefined, 'bold');
+        doc.text(block.speaker, 300, yPos, { align: 'center' });
+        yPos += lineHeight;
+        if (block.parenthetical) {
+          doc.setFontSize(10);
+          doc.setFont(undefined, 'italic');
+          doc.text(block.parenthetical, 300, yPos, { align: 'center' });
+          yPos += lineHeight;
+        }
+        doc.setFontSize(11);
+        doc.setFont(undefined, 'normal');
+        text = block.text;
+        break;
+      case 'action':
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'italic');
+        text = block.text;
+        break;
+      default:
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        text = block.text;
+        break;
+    }
+
+    // Splitting text if it's too long for one line
+    const lines = doc.splitTextToSize(text, 400);
+    lines.forEach((line) => {
+      doc.text(line, 100, yPos);
+      yPos += lineHeight;
+    });
+
+    // Add extra spacing between blocks
+    yPos += lineHeight;
+    if (yPos > 700) {
+      // basic check for page break
+      doc.addPage();
+      yPos = 50;
+    }
+  });
+
+  doc.save('script.pdf');
+}
+
+	3.	Call exportToPDF from your App.svelte (or a button click). This approach is rudimentary but demonstrates how to structure the PDF with custom fonts, alignment, etc.
+
+Option B: Print to PDF
+	•	The user opens a print dialog from the browser, and your page is styled for printing via CSS.
+	•	This yields a more “faithful” representation of how your Svelte components look.
+	•	Just provide a “Print to PDF” button that calls window.print().
+
+5. Performance & Progress Indicators
+
+If you handle large scripts (~10k words or more), consider:
+	1.	Chunked Parsing
+	•	Instead of splitting text in one go, parse in small batches (e.g., 500 lines at a time).
+	•	Update a progress bar as you go.
+	2.	Worker Threads
+	•	You could parse inside a Web Worker to avoid blocking the main UI. This is more advanced but keeps the interface responsive.
+	3.	Progress Bar Implementation Sketch:
+
+<!-- In App.svelte or a dedicated component -->
+<script>
+  import { parseScript } from './parser/parseScript';
+  let progress = 0;
+
+  async function parseWithProgress(rawText) {
+    progress = 0;
+    const lines = rawText.split(/\r?\n/);
+    // chunk size
+    let chunkSize = 100;
+    let blocks = [];
+    for (let i = 0; i < lines.length; i += chunkSize) {
+      const slice = lines.slice(i, i + chunkSize);
+      // parse partial
+      blocks = blocks.concat(parseChunk(slice)); 
+      // update progress
+      progress = Math.round(((i + chunkSize) / lines.length) * 100);
+      await tick(); // or a small setTimeout to yield
+    }
+    return blocks;
+  }
+
+  function parseChunk(lines) {
+    // your parse logic for an array of lines
+    // ...
+  }
+</script>
+
+<div>
+  <progress value={progress} max="100"></progress>
+</div>
+
+This is a simplified example. For a robust approach, you’d refactor your parseScript logic to parse subsets of lines and combine results.
+
+6. Testing & Validation
+
+As your parser grows more complex, add unit tests with a framework like Vitest (works seamlessly with Vite) or Jest:
+	1.	Install:
+
+npm install --save-dev vitest
+
+
+	2.	Write tests in src/parser/parseScript.test.js:
+
+import { describe, it, expect } from 'vitest';
+import { parseScript } from './parseScript';
+
+describe('parseScript', () => {
+  it('handles scene headings starting with #', () => {
+    const input = '# ACT 1\n\nHello there';
+    const blocks = parseScript(input);
+    expect(blocks[0].type).toBe('sceneHeading');
+    expect(blocks[0].text).toBe('ACT 1');
+  });
+
+  it('recognizes a dialogue line', () => {
+    const input = 'HAMILTON: Hello world';
+    const blocks = parseScript(input);
+    expect(blocks[0].type).toBe('dialogue');
+    expect(blocks[0].speaker).toBe('HAMILTON');
+  });
+
+  // ... more tests
+});
+
+	3.	Run tests:
+
+npx vitest
+
+
+
+This ensures that as you add features or fix edge cases, you avoid regressions.
+
+7. Collaboration or Cloud Storage (Future)
+
+Finally, if you want multi‐user editing or saving to the cloud:
+	1.	Realtime with something like Yjs or ShareDB.
+	2.	Cloud Storage with an API or firebase/firestore.
+	3.	You’d need an actual server or serverless function environment. This goes beyond the scope of “local only” but is a natural next step once your local MVP is stable.
+
+Summary of the Next Steps
+	1.	Enhanced Parser: Handle bullet points, headings, nested parentheticals, inline stage directions. Possibly integrate a Markdown parser for robust transformations.
+	2.	In‐Place Editing: Allow users to edit blocks directly in the rendered screenplay for a WYSIWYG experience.
+	3.	Analytics Charts: Add visual charts (pie/bar) with Chart.js or ApexCharts for word counts, line distribution, reading time comparisons, etc.
+	4.	PDF Export: Use jsPDF for custom layout or “Print to PDF” with tailored print CSS.
+	5.	Performance & Progress: Implement chunked parsing or Web Workers for large scripts, plus a progress bar for user feedback.
+	6.	Tests & Validation: Use Vitest (or Jest) for parser logic to ensure correctness.
+	7.	Collaboration/Cloud: In the future, consider real‐time multi‐user editing or cloud saves, which requires a back end.
+
+By tackling these items step by step, you can incrementally transform your MVP into a feature‐rich, high‐performance script editing and analytics platform! If you have additional questions about any specific step—or if you want deeper code samples for a particular feature—just let me know.

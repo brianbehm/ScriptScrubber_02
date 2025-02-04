@@ -1,0 +1,1021 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2820
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 .SFNS-Regular;\f1\fnil\fcharset0 .SFNS-Bold;\f2\froman\fcharset0 TimesNewRomanPSMT;
+\f3\fswiss\fcharset0 Helvetica;\f4\fmodern\fcharset0 Courier;\f5\fmodern\fcharset0 Courier-Oblique;
+\f6\fnil\fcharset0 .AppleSystemUIFontMonospaced-Regular;}
+{\colortbl;\red255\green255\blue255;\red14\green14\blue14;\red155\green162\blue177;\red74\green80\blue93;
+\red184\green93\blue213;\red136\green185\blue102;\red197\green136\blue83;\red72\green168\blue181;\red214\green85\blue98;
+\red81\green156\blue233;}
+{\*\expandedcolortbl;;\cssrgb\c6700\c6700\c6700;\cssrgb\c67059\c69804\c74902;\cssrgb\c36078\c38824\c43922;
+\cssrgb\c77647\c47059\c86667;\cssrgb\c59608\c76471\c47451;\cssrgb\c81961\c60392\c40000;\cssrgb\c33725\c71373\c76078;\cssrgb\c87843\c42353\c45882;
+\cssrgb\c38039\c68235\c93333;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf2 Below is a 
+\f1\b starter Svelte application
+\f0\b0  implementing the core MVP features described in your plan:\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f2 \cf2 	1.	
+\f1\b Local Parsing
+\f0\b0  of a user\uc0\u8208 provided Markdown/text script into a structured data model (scene headings, dialogue, etc.).\
+
+\f2 	2.	
+\f1\b Fountain\uc0\u8208 style Rendering
+\f0\b0  in the left pane.\
+
+\f2 	3.	
+\f1\b Analytics Panel
+\f0\b0  on the right (with basic line/word counts).\
+
+\f2 	4.	
+\f1\b Light/Dark Theme Toggle
+\f0\b0 .\
+
+\f2 	5.	
+\f1\b Keyboard Shortcuts
+\f0\b0  (e.g., Ctrl+E to export).\
+
+\f2 	6.	
+\f1\b File Upload & Debounced Real\uc0\u8208 Time Updates
+\f0\b0  in a side\uc0\u8208 by\u8208 side text editor scenario.\
+\
+This skeleton is written using {\field{\*\fldinst{HYPERLINK "https://vitejs.dev/"}}{\fldrslt Vite}} for bundling + Svelte. You can expand it with more components (e.g., charts, PDF export, extended analytics) as you progress. Consider it a foundation to evolve into the final vision.\
+\
+\pard\tx300\li300\fi-300\sl324\slmult1\partightenfactor0
+\cf2 	
+\f1\b Note
+\f0\b0 : This code is only a basic scaffolding; you\'92ll want to refine the parsing logic, add more robust checks, integrate chart libraries, etc.
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs34 \cf2 1. Project Setup
+\f0\b0\fs28 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b \cf2 Step 1:
+\f0\b0  Create a new Svelte + Vite project:
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f4\fs28 \cf3 npm create vite@latest my-screenplay-app -- --template svelte\
+cd my-screenplay-app\
+npm install
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs28 \cf2 Step 2 (Optional):
+\f0\b0  Install any additional libraries you might want, for example:
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f4\fs28 \cf3 npm install marked   
+\f5\i \cf4 # For more advanced Markdown parsing (optional)
+\f4\i0 \cf3 \
+npm install jspdf    
+\f5\i \cf4 # For PDF export (optional)
+\f4\i0 \cf3 \
+npm install chart.js 
+\f5\i \cf4 # For analytics charts (optional)
+\f3\i0\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs28 \cf2 Step 3:
+\f0\b0  Replace the default files with the structure below. The main files we\'92ll show here are:\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f6 src/App.svelte
+\f0 \
+	\'95	
+\f6 src/components/EditorView.svelte
+\f0 \
+	\'95	
+\f6 src/components/ScreenplayView.svelte
+\f0 \
+	\'95	
+\f6 src/components/AnalyticsPanel.svelte
+\f0 \
+	\'95	
+\f6 src/parser/parseScript.js
+\f0 \
+	\'95	
+\f6 src/store/theme.js
+\f0  (for theme switching)\
+	\'95	
+\f6 src/main.js
+\f0 \
+\
+When done, run:
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f4\fs28 \cf3 npm run dev
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf2 Then open your browser at {\field{\*\fldinst{HYPERLINK "http://localhost:5173/"}}{\fldrslt http://localhost:5173/}} (or similar port) to see your app.
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs34 \cf2 2. File Structure (Example)
+\f3\b0\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f4\fs28 \cf3 my-screenplay-app/\
+\uc0\u9474 \
+\uc0\u9500 \u9472  \cf5 package\cf3 .json\
+\uc0\u9500 \u9472  vite.config.js\
+\uc0\u9500 \u9472  src/\
+\uc0\u9474   \u9500 \u9472  main.js\
+\uc0\u9474   \u9500 \u9472  App.svelte\
+\uc0\u9474   \u9500 \u9472  parser/\
+\uc0\u9474   \u9474   \u9492 \u9472  parseScript.js\
+\uc0\u9474   \u9500 \u9472  store/\
+\uc0\u9474   \u9474   \u9492 \u9472  theme.js\
+\uc0\u9474   \u9492 \u9472  components/\
+\uc0\u9474      \u9500 \u9472  EditorView.svelte\
+\uc0\u9474      \u9500 \u9472  ScreenplayView.svelte\
+\uc0\u9474      \u9492 \u9472  AnalyticsPanel.svelte\
+\uc0\u9492 \u9472  \cf5 public\cf3 /\
+   \uc0\u9492 \u9472  ... \cf5 static\cf3  assets \cf5 if\cf3  needed
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs34 \cf2 3. parseScript.js \'96 Basic Parsing Logic
+\f0\b0\fs28 \
+\
+Here\'92s a simplified parser that demonstrates:\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Detecting scene headings (lines starting with 
+\f6 #
+\f0  or uppercase lines).\
+	\'95	Detecting speaker lines (
+\f6 NAME:
+\f0  pattern).\
+	\'95	Treating bracketed lines 
+\f6 [Something]
+\f0  as action.\
+	\'95	Otherwise, falling back to action or blank separators.\
+\
+Feel free to expand/adjust the logic or integrate advanced regex checks.
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i\fs28 \cf4 // src/parser/parseScript.js
+\f4\i0 \cf3 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf5 export\cf3  \cf5 function\cf3  parseScript(rawText) \{\
+  \cf5 const\cf3  blocks = [];\
+  \cf5 const\cf3  lines = rawText.split(\cf6 /\\r?\\n/\cf3 );\
+\
+  \cf5 for\cf3  (\cf5 let\cf3  i = \cf7 0\cf3 ; i < lines.length; i++) \{\
+    \cf5 const\cf3  trimmedLine = lines[i].trim();\
+\
+    \cf5 if\cf3  (!trimmedLine) \{\
+      
+\f5\i \cf4 // Treat blank line as a separator
+\f4\i0 \cf3 \
+      blocks.push(\{ \cf7 type\cf3 : \cf6 'separator'\cf3  \});\
+      \cf5 continue\cf3 ;\
+    \}\
+\
+    \cf5 if\cf3  (isSceneHeading(trimmedLine)) \{\
+      blocks.push(\{\
+        \cf7 type\cf3 : \cf6 'sceneHeading'\cf3 ,\
+        \cf7 text\cf3 : extractSceneHeading(trimmedLine),\
+      \});\
+    \} \cf5 else\cf3  \cf5 if\cf3  (isCharacterLine(trimmedLine)) \{\
+      \cf5 const\cf3  \{ speaker, parenthetical, dialogue \} = extractDialogueParts(trimmedLine);\
+      blocks.push(\{\
+        \cf7 type\cf3 : \cf6 'dialogue'\cf3 ,\
+        speaker,\
+        parenthetical, 
+\f5\i \cf4 // e.g., (softly)
+\f4\i0 \cf3 \
+        \cf7 text\cf3 : dialogue,\
+      \});\
+    \} \cf5 else\cf3  \cf5 if\cf3  (isStageDirection(trimmedLine)) \{\
+      blocks.push(\{\
+        \cf7 type\cf3 : \cf6 'action'\cf3 ,\
+        \cf7 text\cf3 : trimmedLine,\
+      \});\
+    \} \cf5 else\cf3  \{\
+      
+\f5\i \cf4 // Fallback to action
+\f4\i0 \cf3 \
+      blocks.push(\{\
+        \cf7 type\cf3 : \cf6 'action'\cf3 ,\
+        \cf7 text\cf3 : trimmedLine,\
+      \});\
+    \}\
+  \}\
+\
+  \cf5 return\cf3  blocks;\
+\}\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i \cf4 // Detect scene heading if line starts with '#' or is uppercase with minimal punctuation:
+\f4\i0 \cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf5 function\cf3  isSceneHeading(line) \{\
+  \cf5 if\cf3  (line.startsWith(\cf6 '#'\cf3 )) \cf5 return\cf3  \cf8 true\cf3 ;\
+  
+\f5\i \cf4 // crude check for uppercase line
+\f4\i0 \cf3 \
+  \cf5 const\cf3  noPunct = line.replace(\cf6 /[^\\w\\s]/g\cf3 , \cf6 ''\cf3 );\
+  \cf5 return\cf3  noPunct === noPunct.toUpperCase() && noPunct.length > \cf7 0\cf3 ;\
+\}\
+\
+\cf5 function\cf3  extractSceneHeading(line) \{\
+  
+\f5\i \cf4 // If it starts with '#', remove '#' symbols. Otherwise just return as is.
+\f4\i0 \cf3 \
+  \cf5 return\cf3  line.replace(\cf6 /^#+\\s*/\cf3 , \cf6 ''\cf3 ).toUpperCase();\
+\}\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i \cf4 // Check if line matches a pattern like "CHARACTER:" or "**CHARACTER:**"
+\f4\i0 \cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf5 function\cf3  isCharacterLine(line) \{\
+  
+\f5\i \cf4 // Very simple check: does it end with a colon, ignoring asterisks/spaces?
+\f4\i0 \cf3 \
+  
+\f5\i \cf4 // e.g. "**NAME (something)**: Hello"
+\f4\i0 \cf3 \
+  
+\f5\i \cf4 // Alternatively, use a more advanced regex. This is a naive approach.
+\f4\i0 \cf3 \
+  \cf5 const\cf3  regex = \cf6 /^(\\*\{0,2\})?([A-Z][A-Z\\s'\\(\\)0-9-]*)(\\*\{0,2\})?:/\cf3 ;\
+  \cf5 return\cf3  regex.test(line);\
+\}\
+\
+\cf5 function\cf3  extractDialogueParts(line) \{\
+  
+\f5\i \cf4 // Example: "**HAMILTON (softly):** Hello there"
+\f4\i0 \cf3 \
+  
+\f5\i \cf4 // 1) Remove leading/trailing asterisks
+\f4\i0 \cf3 \
+  
+\f5\i \cf4 // 2) Capture speaker
+\f4\i0 \cf3 \
+  
+\f5\i \cf4 // 3) capture parenthetical if present
+\f4\i0 \cf3 \
+  
+\f5\i \cf4 // 4) capture the remainder as dialogue
+\f4\i0 \cf3 \
+  \cf5 let\cf3  speaker = \cf6 ''\cf3 ;\
+  \cf5 let\cf3  parenthetical = \cf6 ''\cf3 ;\
+  \cf5 let\cf3  dialogue = \cf6 ''\cf3 ;\
+\
+  
+\f5\i \cf4 // First, separate everything before the first colon
+\f4\i0 \cf3 \
+  \cf5 const\cf3  [beforeColon, ...rest] = line.split(\cf6 ':'\cf3 );\
+  \cf5 const\cf3  remainder = rest.join(\cf6 ':'\cf3 ).trim(); 
+\f5\i \cf4 // everything after the colon
+\f4\i0 \cf3 \
+\
+  
+\f5\i \cf4 // Remove asterisks from beforeColon
+\f4\i0 \cf3 \
+  \cf5 const\cf3  cleanBefore = beforeColon.replace(\cf6 /\\*+/g\cf3 , \cf6 ''\cf3 ).trim();\
+\
+  
+\f5\i \cf4 // Attempt to extract parenthetical from speaker portion
+\f4\i0 \cf3 \
+  
+\f5\i \cf4 // e.g. "HAMILTON (softly)" => speaker = HAMILTON, parenthetical = (softly)
+\f4\i0 \cf3 \
+  \cf5 const\cf3  match = cleanBefore.match(\cf6 /^([A-Z0-9\\s'\\(\\)-]+)\\s*(\\([^)]+\\))?\\s*$/\cf3 );\
+  \cf5 if\cf3  (match) \{\
+    speaker = match[\cf7 1\cf3 ].trim();\
+    \cf5 if\cf3  (match[\cf7 2\cf3 ]) \{\
+      parenthetical = match[\cf7 2\cf3 ].trim(); 
+\f5\i \cf4 // e.g. (softly)
+\f4\i0 \cf3 \
+    \}\
+  \} \cf5 else\cf3  \{\
+    
+\f5\i \cf4 // fallback, if something weird
+\f4\i0 \cf3 \
+    speaker = cleanBefore.trim();\
+  \}\
+\
+  dialogue = remainder;\
+\
+  \cf5 return\cf3  \{ \cf7 speaker\cf3 : speaker.toUpperCase(), parenthetical, dialogue \};\
+\}\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i \cf4 // If line is bracketed or parentheses, treat as stage direction
+\f4\i0 \cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf5 function\cf3  isStageDirection(line) \{\
+  
+\f5\i \cf4 // e.g. "[Stage direction]" or "(Stage direction)"
+\f4\i0 \cf3 \
+  \cf5 return\cf3  (\
+    (line.startsWith(\cf6 '['\cf3 ) && line.endsWith(\cf6 ']'\cf3 )) ||\
+    (line.startsWith(\cf6 '('\cf3 ) && line.endsWith(\cf6 ')'\cf3 ))\
+  );\
+\}
+\f3\fs24 \cf0 \
+\
+\pard\tx300\li300\fi-300\sl324\slmult1\partightenfactor0
+
+\f0\fs28 \cf2 	
+\f1\b Real-world improvement
+\f0\b0 : Use more robust regex or external libraries to handle nested parentheses, bullet points, or special cases.
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs34 \cf2 4. computeAnalytics.js \'96 Basic Analytics
+\f0\b0\fs28 \
+\
+Create a separate helper (or integrate it in 
+\f6 parseScript.js
+\f0 ) to compute line/word counts:
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i\fs28 \cf4 // src/parser/computeAnalytics.js
+\f4\i0 \cf3 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf5 export\cf3  \cf5 function\cf3  computeAnalytics(blocks) \{\
+  \cf5 const\cf3  speakers = \{\};\
+  \cf5 let\cf3  totalWords = \cf7 0\cf3 ;\
+  \cf5 let\cf3  totalDialogueBlocks = \cf7 0\cf3 ;\
+\
+  \cf5 for\cf3  (\cf5 const\cf3  block \cf5 of\cf3  blocks) \{\
+    \cf5 if\cf3  (block.type === \cf6 'dialogue'\cf3 ) \{\
+      \cf5 const\cf3  count = wordCount(block.text);\
+      \cf5 if\cf3  (!speakers[block.speaker]) \{\
+        speakers[block.speaker] = \{ \cf7 wordCount\cf3 : \cf7 0\cf3 , \cf7 lineCount\cf3 : \cf7 0\cf3  \};\
+      \}\
+      speakers[block.speaker].wordCount += count;\
+      speakers[block.speaker].lineCount++;\
+      totalWords += count;\
+      totalDialogueBlocks++;\
+    \}\
+  \}\
+\
+  
+\f5\i \cf4 // Add percentage calculations
+\f4\i0 \cf3 \
+  \cf5 for\cf3  (\cf5 const\cf3  name \cf5 in\cf3  speakers) \{\
+    speakers[name].wordPct = totalWords > \cf7 0\cf3 \
+      ? (speakers[name].wordCount / totalWords) * \cf7 100\cf3 \
+      : \cf7 0\cf3 ;\
+    speakers[name].linePct = totalDialogueBlocks > \cf7 0\cf3 \
+      ? (speakers[name].lineCount / totalDialogueBlocks) * \cf7 100\cf3 \
+      : \cf7 0\cf3 ;\
+  \}\
+\
+  \cf5 return\cf3  \{ speakers, totalWords, totalDialogueBlocks \};\
+\}\
+\
+\cf5 function\cf3  wordCount(text) \{\
+  \cf5 return\cf3  text.trim().split(\cf6 /\\s+/\cf3 ).filter(Boolean).length;\
+\}
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs34 \cf2 5. theme.js \'96 Simple Light/Dark Store (Optional)
+\f0\b0\fs28 \
+\
+Use a Svelte writable store to manage theme state. This example toggles 
+\f6 'light'
+\f0  \uc0\u8596  
+\f6 'dark'
+\f0 .
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i\fs28 \cf4 // src/store/theme.js
+\f4\i0 \cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf5 import\cf3  \{ writable \} \cf5 from\cf3  \cf6 'svelte/store'\cf3 ;\
+\
+\cf5 export\cf3  \cf5 const\cf3  theme = writable(\cf6 'light'\cf3 );\
+\
+\cf5 export\cf3  \cf5 function\cf3  toggleTheme() \{\
+  theme.update((current) => (current === \cf6 'light'\cf3  ? \cf6 'dark'\cf3  : \cf6 'light'\cf3 ));\
+\}
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf2 In your global CSS (or 
+\f6 App.svelte
+\f0 ), use 
+\f6 [data-theme='dark'] \{ ... \}
+\f0  to style accordingly.
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs34 \cf2 6. EditorView.svelte \'96 Raw Text Editor
+\f0\b0\fs28 \
+\
+Users can paste or drag/drop text here. We\'92ll emit a 
+\f6 scriptText
+\f0  value up to the parent (App) via a Svelte 
+\f6 dispatch
+\f0 .
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i\fs28 \cf4 <!-- src/components/EditorView.svelte -->
+\f4\i0 \cf3 \
+<\cf9 script\cf3 >\
+  \cf5 import\cf3  \{ createEventDispatcher \} \cf5 from\cf3  \cf6 'svelte'\cf3 ;\
+  \cf5 import\cf3  \{ onMount \} \cf5 from\cf3  \cf6 'svelte'\cf3 ;\
+\
+  \cf5 const\cf3  dispatch = createEventDispatcher();\
+\
+  \cf5 export\cf3  \cf5 let\cf3  initialText = \cf6 ''\cf3 ;\
+\
+  \cf5 let\cf3  scriptText = initialText;\
+  \cf5 let\cf3  debounceTimer;\
+\
+  \cf5 function\cf3  handleInput(e) \{\
+    
+\f5\i \cf4 // Use a debounce to avoid parsing on every keystroke
+\f4\i0 \cf3 \
+    clearTimeout(debounceTimer);\
+    scriptText = e.target.value;\
+    debounceTimer = setTimeout(() => \{\
+      dispatch(\cf6 'update'\cf3 , \{ \cf7 text\cf3 : scriptText \});\
+    \}, \cf7 400\cf3 );\
+  \}\
+\
+  
+\f5\i \cf4 // Optionally handle file drop
+\f4\i0 \cf3 \
+  \cf5 function\cf3  handleFileDrop(e) \{\
+    e.preventDefault();\
+    \cf5 const\cf3  file = e.dataTransfer.files[\cf7 0\cf3 ];\
+    \cf5 if\cf3  (file) \{\
+      \cf5 const\cf3  reader = \cf5 new\cf3  FileReader();\
+      reader.onload = (ev) => \{\
+        scriptText = ev.target.result;\
+        dispatch(\cf6 'update'\cf3 , \{ \cf7 text\cf3 : scriptText \});\
+      \};\
+      reader.readAsText(file);\
+    \}\
+  \}\
+\
+  \cf5 function\cf3  handleDragOver(e) \{\
+    e.preventDefault();\
+  \}\
+</\cf9 script\cf3 >\
+\
+<\cf9 style\cf3 >\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf7 .editor-container\cf3  \{\
+  \cf6 display\cf3 : flex;\
+  \cf6 flex-direction\cf3 : column;\
+  \cf6 height\cf3 : \cf7 100%\cf3 ;\
+\}\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf9 textarea\cf3  \{\
+  \cf6 flex\cf3 : \cf7 1\cf3 ;\
+  \cf6 padding\cf3 : \cf7 0.75rem\cf3 ;\
+  \cf6 font-family\cf3 : monospace;\
+  \cf6 font-size\cf3 : \cf7 0.9rem\cf3 ;\
+  \cf6 border\cf3 : \cf7 1px\cf3  solid \cf7 #ccc\cf3 ;\
+  \cf6 resize\cf3 : none;\
+\}\
+</\cf9 style\cf3 >\
+\
+<\cf9 div\cf3 \
+  \cf7 class\cf3 =\cf6 "editor-container"\cf3 \
+  \cf7 on:drop\cf3 =\cf6 \{handleFileDrop\}\cf3 \
+  \cf7 on:dragover\cf3 =\cf6 \{handleDragOver\}\cf3 \
+>\
+  <\cf9 textarea\cf3 \
+    \cf7 bind:value\cf3 =\cf6 \{scriptText\}\cf3 \
+    \cf7 on:input\cf3 =\cf6 \{handleInput\}\cf3 \
+    \cf7 placeholder\cf3 =\cf6 "Paste or drop your script text here..."\cf3 \
+  />\
+</\cf9 div\cf3 >
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs34 \cf2 7. ScreenplayView.svelte \'96 Render the Parsed Blocks
+\f0\b0\fs28 \
+\
+A simple read\uc0\u8208 only view. Each block is rendered differently based on its 
+\f6 type
+\f0 .
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i\fs28 \cf4 <!-- src/components/ScreenplayView.svelte -->
+\f4\i0 \cf3 \
+<\cf9 script\cf3 >\
+  \cf5 export\cf3  \cf5 let\cf3  blocks = [];\
+</\cf9 script\cf3 >\
+\
+<\cf9 style\cf3 >\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf7 .screenplay-container\cf3  \{\
+  \cf6 padding\cf3 : \cf7 1rem\cf3 ;\
+  \cf6 overflow-y\cf3 : auto;\
+  \cf6 max-height\cf3 : \cf7 100%\cf3 ;\
+  \cf6 font-family\cf3 : \cf6 'Courier'\cf3 , monospace;\
+\}\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i \cf4 /* Example styling for each block type */
+\f4\i0 \cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf7 .scene-heading\cf3  \{\
+  \cf6 text-transform\cf3 : uppercase;\
+  \cf6 font-weight\cf3 : bold;\
+  \cf6 margin\cf3 : \cf7 1rem\cf3  \cf7 0\cf3  \cf7 0.5rem\cf3  \cf7 0\cf3 ;\
+\}\
+\
+\cf7 .dialogue-speaker\cf3  \{\
+  \cf6 text-align\cf3 : center;\
+  \cf6 font-weight\cf3 : bold;\
+  \cf6 margin-top\cf3 : \cf7 1rem\cf3 ;\
+\}\
+\
+\cf7 .parenthetical\cf3  \{\
+  \cf6 text-align\cf3 : center;\
+  \cf6 font-style\cf3 : italic;\
+  \cf6 margin\cf3 : \cf7 0.25rem\cf3  \cf7 0\cf3 ;\
+\}\
+\
+\cf7 .dialogue-text\cf3  \{\
+  \cf6 margin\cf3 : \cf7 0.5rem\cf3  \cf7 0\cf3 ;\
+  \cf6 padding\cf3 : \cf7 0\cf3  \cf7 2rem\cf3 ;\
+\}\
+\
+\cf7 .action\cf3  \{\
+  \cf6 margin\cf3 : \cf7 0.5rem\cf3  \cf7 0\cf3 ;\
+  \cf6 font-style\cf3 : italic;\
+\}\
+\cf7 .separator\cf3  \{\
+  \cf6 margin\cf3 : \cf7 0.5rem\cf3  \cf7 0\cf3 ;\
+\}\
+</\cf9 style\cf3 >\
+\
+<\cf9 div\cf3  \cf7 class\cf3 =\cf6 "screenplay-container"\cf3 >\
+  \{#each blocks as block\}\
+    \{#if block.type === 'sceneHeading'\}\
+      <\cf9 div\cf3  \cf7 class\cf3 =\cf6 "scene-heading"\cf3 >\{block.text\}</\cf9 div\cf3 >\
+    \{:else if block.type === 'dialogue'\}\
+      <\cf9 div\cf3  \cf7 class\cf3 =\cf6 "dialogue-speaker"\cf3 >\{block.speaker\}</\cf9 div\cf3 >\
+      \{#if block.parenthetical\}\
+        <\cf9 div\cf3  \cf7 class\cf3 =\cf6 "parenthetical"\cf3 >\{block.parenthetical\}</\cf9 div\cf3 >\
+      \{/if\}\
+      <\cf9 div\cf3  \cf7 class\cf3 =\cf6 "dialogue-text"\cf3 >\{block.text\}</\cf9 div\cf3 >\
+    \{:else if block.type === 'action'\}\
+      <\cf9 div\cf3  \cf7 class\cf3 =\cf6 "action"\cf3 >\{block.text\}</\cf9 div\cf3 >\
+    \{:else if block.type === 'separator'\}\
+      <\cf9 div\cf3  \cf7 class\cf3 =\cf6 "separator"\cf3 >\cf10 &nbsp;\cf3 </\cf9 div\cf3 >\
+    \{:else\}\
+      
+\f5\i \cf4 <!-- fallback, e.g., action or unknown -->
+\f4\i0 \cf3 \
+      <\cf9 div\cf3  \cf7 class\cf3 =\cf6 "action"\cf3 >\{block.text\}</\cf9 div\cf3 >\
+    \{/if\}\
+  \{/each\}\
+</\cf9 div\cf3 >
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs34 \cf2 8. AnalyticsPanel.svelte \'96 Display Basic Stats
+\f0\b0\fs28 \
+\
+We\'92ll use the 
+\f6 computeAnalytics
+\f0  function here to derive speaker data. A real app might show charts, reading time, etc.
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i\fs28 \cf4 <!-- src/components/AnalyticsPanel.svelte -->
+\f4\i0 \cf3 \
+<\cf9 script\cf3 >\
+  \cf5 import\cf3  \{ computeAnalytics \} \cf5 from\cf3  \cf6 '../parser/computeAnalytics'\cf3 ;\
+\
+  \cf5 export\cf3  \cf5 let\cf3  blocks = [];\
+\
+  \cf7 $\cf3 : stats = computeAnalytics(blocks);\
+  \cf7 $\cf3 : speakersArray = Object.keys(stats.speakers || \{\}).map((name) => (\{\
+    name,\
+    ...stats.speakers[name],\
+  \}));\
+\
+  
+\f5\i \cf4 // Example WPM setting:
+\f4\i0 \cf3 \
+  \cf5 let\cf3  wpm = \cf7 150\cf3 ;\
+  \cf7 $\cf3 : totalReadingTime = stats.totalWords / wpm;\
+</\cf9 script\cf3 >\
+\
+<\cf9 style\cf3 >\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf7 .analytics-container\cf3  \{\
+  \cf6 padding\cf3 : \cf7 1rem\cf3 ;\
+  \cf6 overflow-y\cf3 : auto;\
+  \cf6 max-height\cf3 : \cf7 100%\cf3 ;\
+  \cf6 border-left\cf3 : \cf7 1px\cf3  solid \cf7 #ccc\cf3 ;\
+\}\
+\cf7 .speaker-stat\cf3  \{\
+  \cf6 margin-bottom\cf3 : \cf7 0.5rem\cf3 ;\
+\}\
+</\cf9 style\cf3 >\
+\
+<\cf9 div\cf3  \cf7 class\cf3 =\cf6 "analytics-container"\cf3 >\
+  <\cf9 h3\cf3 >Analytics</\cf9 h3\cf3 >\
+  <\cf9 p\cf3 >Total words: \{stats.totalWords\}</\cf9 p\cf3 >\
+  <\cf9 p\cf3 >Total dialogue blocks: \{stats.totalDialogueBlocks\}</\cf9 p\cf3 >\
+\
+  <\cf9 div\cf3  \cf7 style\cf3 =\cf6 "margin-top:1rem;"\cf3 >\
+    <\cf9 label\cf3 >Reading speed (WPM): </\cf9 label\cf3 >\
+    <\cf9 input\cf3  \cf7 type\cf3 =\cf6 "number"\cf3  \cf7 bind:value\cf3 =\cf6 \{wpm\}\cf3  \cf7 min\cf3 =\cf6 "50"\cf3  \cf7 max\cf3 =\cf6 "400"\cf3  />\
+    <\cf9 p\cf3 >Approx reading time: \{totalReadingTime.toFixed(1)\} mins</\cf9 p\cf3 >\
+  </\cf9 div\cf3 >\
+\
+  <\cf9 h4\cf3  \cf7 style\cf3 =\cf6 "margin-top:1rem;"\cf3 >Speakers</\cf9 h4\cf3 >\
+  \{#if speakersArray.length > 0\}\
+    \{#each speakersArray as sp\}\
+      <\cf9 div\cf3  \cf7 class\cf3 =\cf6 "speaker-stat"\cf3 >\
+        <\cf9 strong\cf3 >\{sp.name\}</\cf9 strong\cf3 ><\cf9 br\cf3  />\
+        Words: \{sp.wordCount\} (\{sp.wordPct.toFixed(1)\}%)<\cf9 br\cf3  />\
+        Lines: \{sp.lineCount\} (\{sp.linePct.toFixed(1)\}%)\
+      </\cf9 div\cf3 >\
+    \{/each\}\
+  \{:else\}\
+    <\cf9 p\cf3 >No dialogue found.</\cf9 p\cf3 >\
+  \{/if\}\
+</\cf9 div\cf3 >
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs34 \cf2 9. App.svelte \'96 The Main Layout
+\f0\b0\fs28 \
+\
+Brings everything together:\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	A top bar with a 
+\f1\b Theme Toggle
+\f0\b0 , 
+\f1\b Export
+\f0\b0  button, etc.\
+	\'95	Side\uc0\u8208 by\u8208 side: 
+\f1\b EditorView
+\f0\b0  (left) and 
+\f1\b ScreenplayView
+\f0\b0  + 
+\f1\b AnalyticsPanel
+\f0\b0  (right).
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i\fs28 \cf4 <!-- src/App.svelte -->
+\f4\i0 \cf3 \
+<\cf9 script\cf3 >\
+  \cf5 import\cf3  \{ onMount \} \cf5 from\cf3  \cf6 'svelte'\cf3 ;\
+  \cf5 import\cf3  \{ theme, toggleTheme \} \cf5 from\cf3  \cf6 './store/theme'\cf3 ;\
+  \cf5 import\cf3  EditorView \cf5 from\cf3  \cf6 './components/EditorView.svelte'\cf3 ;\
+  \cf5 import\cf3  ScreenplayView \cf5 from\cf3  \cf6 './components/ScreenplayView.svelte'\cf3 ;\
+  \cf5 import\cf3  AnalyticsPanel \cf5 from\cf3  \cf6 './components/AnalyticsPanel.svelte'\cf3 ;\
+\
+  \cf5 import\cf3  \{ parseScript \} \cf5 from\cf3  \cf6 './parser/parseScript'\cf3 ;\
+\
+  \cf5 let\cf3  rawText = \cf6 ''\cf3 ;\
+  \cf5 let\cf3  parsedBlocks = [];\
+\
+  
+\f5\i \cf4 // Keyboard shortcuts
+\f4\i0 \cf3 \
+  \cf5 function\cf3  handleKeyDown(e) \{\
+    
+\f5\i \cf4 // Ctrl+E => export
+\f4\i0 \cf3 \
+    \cf5 if\cf3  (e.ctrlKey && e.key === \cf6 'e'\cf3 ) \{\
+      e.preventDefault();\
+      exportFountain();\
+    \}\
+    
+\f5\i \cf4 // Ctrl+Shift+L => toggle theme
+\f4\i0 \cf3 \
+    \cf5 if\cf3  (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === \cf6 'l'\cf3 ) \{\
+      e.preventDefault();\
+      toggleTheme();\
+    \}\
+  \}\
+\
+  
+\f5\i \cf4 // Debounced parse function once rawText changes
+\f4\i0 \cf3 \
+  \cf7 $\cf3 : parsedBlocks = parseScript(rawText);\
+\
+  \cf5 function\cf3  onEditorUpdate(e) \{\
+    rawText = e.detail.text;\
+  \}\
+\
+  
+\f5\i \cf4 // Example fountain exporter
+\f4\i0 \cf3 \
+  \cf5 function\cf3  exportFountain() \{\
+    \cf5 const\cf3  fountainText = toFountain(parsedBlocks);\
+    \cf5 const\cf3  blob = \cf5 new\cf3  Blob([fountainText], \{ \cf7 type\cf3 : \cf6 'text/plain'\cf3  \});\
+    \cf5 const\cf3  url = URL.createObjectURL(blob);\
+\
+    \cf5 const\cf3  a = document.createElement(\cf6 'a'\cf3 );\
+    a.href = url;\
+    a.download = \cf6 'script.fountain'\cf3 ;\
+    document.body.appendChild(a);\
+    a.click();\
+    document.body.removeChild(a);\
+  \}\
+\
+  \cf5 function\cf3  toFountain(blocks) \{\
+    \cf5 return\cf3  blocks\
+      .map((block) => \{\
+        \cf5 switch\cf3  (block.type) \{\
+          \cf5 case\cf3  \cf6 'sceneHeading'\cf3 :\
+            \cf5 return\cf3  block.text; 
+\f5\i \cf4 // e.g. "INT. HOUSE - DAY"
+\f4\i0 \cf3 \
+          \cf5 case\cf3  \cf6 'dialogue'\cf3 :\
+            \cf5 let\cf3  lines = [];\
+            lines.push(block.speaker); 
+\f5\i \cf4 // all caps
+\f4\i0 \cf3 \
+            \cf5 if\cf3  (block.parenthetical) \{\
+              lines.push(block.parenthetical);\
+            \}\
+            lines.push(block.text);\
+            \cf5 return\cf3  lines.join(\cf6 '\\n'\cf3 );\
+          \cf5 case\cf3  \cf6 'action'\cf3 :\
+            \cf5 return\cf3  block.text;\
+          \cf5 case\cf3  \cf6 'separator'\cf3 :\
+            \cf5 return\cf3  \cf6 ''\cf3 ;\
+          \cf7 default\cf3 :\
+            \cf5 return\cf3  block.text;\
+        \}\
+      \})\
+      .join(\cf6 '\\n\\n'\cf3 );\
+  \}\
+</\cf9 script\cf3 >\
+\
+<\cf9 style\cf3 >\
+:global(:root) \{\
+  \cf7 --bg-color-light\cf3 : \cf7 #ffffff\cf3 ;\
+  \cf7 --text-color-light\cf3 : \cf7 #000000\cf3 ;\
+\
+  \cf7 --bg-color-dark\cf3 : \cf7 #1e1e1e\cf3 ;\
+  \cf7 --text-color-dark\cf3 : \cf7 #dddddd\cf3 ;\
+\}\
+\
+:global([data-theme=\cf6 'light'\cf3 ]) \{\
+  \cf6 background-color\cf3 : var(--bg-color-light);\
+  \cf6 color\cf3 : var(--text-color-light);\
+\}\
+\
+:global([data-theme=\cf6 'dark'\cf3 ]) \{\
+  \cf6 background-color\cf3 : var(--bg-color-dark);\
+  \cf6 color\cf3 : var(--text-color-dark);\
+\}\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf7 .app-container\cf3  \{\
+  \cf6 display\cf3 : flex;\
+  \cf6 flex-direction\cf3 : column;\
+  \cf6 height\cf3 : \cf7 100vh\cf3 ;\
+\}\
+\
+\cf7 .top-bar\cf3  \{\
+  \cf6 flex\cf3 : \cf7 0\cf3  \cf7 0\cf3  auto;\
+  \cf6 padding\cf3 : \cf7 0.5rem\cf3  \cf7 1rem\cf3 ;\
+  \cf6 border-bottom\cf3 : \cf7 1px\cf3  solid \cf7 #ccc\cf3 ;\
+  \cf6 display\cf3 : flex;\
+  \cf6 align-items\cf3 : center;\
+  \cf6 justify-content\cf3 : space-between;\
+\}\
+\
+\cf7 .main-content\cf3  \{\
+  \cf6 flex\cf3 : \cf7 1\cf3 ;\
+  \cf6 display\cf3 : grid;\
+  \cf6 grid-template-columns\cf3 : \cf7 1\cf3 fr \cf7 1\cf3 fr \cf7 300px\cf3 ;\
+  
+\f5\i \cf4 /* left: editor, middle: screenplay, right: analytics */
+\f4\i0 \cf3 \
+\}\
+\
+\cf7 .editor-panel\cf3  \{\
+  \cf6 border-right\cf3 : \cf7 1px\cf3  solid \cf7 #ccc\cf3 ;\
+\}\
+\
+\cf7 .screenplay-panel\cf3  \{\
+  \cf6 border-right\cf3 : \cf7 1px\cf3  solid \cf7 #ccc\cf3 ;\
+\}\
+\
+\cf7 .analytics-panel\cf3  \{\
+  
+\f5\i \cf4 /* optional styles */
+\f4\i0 \cf3 \
+\}\
+</\cf9 style\cf3 >\
+\
+<\cf9 svelte:window\cf3  \cf7 on:keydown\cf3 =\cf6 \{handleKeyDown\}\cf3  />\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i \cf4 <!-- Apply theme data-attribute globally -->
+\f4\i0 \cf3 \
+<\cf9 svelte:window\cf3  \cf7 bind:documentElement.dataset.theme\cf3 =\cf6 \{$theme\}\cf3  />\
+\
+<\cf9 div\cf3  \cf7 class\cf3 =\cf6 "app-container"\cf3 >\
+  <\cf9 div\cf3  \cf7 class\cf3 =\cf6 "top-bar"\cf3 >\
+    <\cf9 div\cf3 >\
+      <\cf9 button\cf3  \cf7 on:click\cf3 =\cf6 \{toggleTheme\}\cf3 >Toggle Theme</\cf9 button\cf3 >\
+      <\cf9 button\cf3  \cf7 on:click\cf3 =\cf6 \{exportFountain\}\cf3 >Export (.fountain)</\cf9 button\cf3 >\
+    </\cf9 div\cf3 >\
+    <\cf9 div\cf3 >\
+      
+\f5\i \cf4 <!-- Optional: show current theme -->
+\f4\i0 \cf3 \
+      Current theme: \{$theme\}\
+    </\cf9 div\cf3 >\
+  </\cf9 div\cf3 >\
+\
+  <\cf9 div\cf3  \cf7 class\cf3 =\cf6 "main-content"\cf3 >\
+    
+\f5\i \cf4 <!-- Left Column: Editor -->
+\f4\i0 \cf3 \
+    <\cf9 div\cf3  \cf7 class\cf3 =\cf6 "editor-panel"\cf3 >\
+      <\cf9 EditorView\cf3  \cf7 on:update\cf3 =\cf6 \{onEditorUpdate\}\cf3  />\
+    </\cf9 div\cf3 >\
+\
+    
+\f5\i \cf4 <!-- Middle Column: Screenplay View -->
+\f4\i0 \cf3 \
+    <\cf9 div\cf3  \cf7 class\cf3 =\cf6 "screenplay-panel"\cf3 >\
+      <\cf9 ScreenplayView\cf3  \{\cf7 parsedBlocks\cf3 \} />\
+    </\cf9 div\cf3 >\
+\
+    
+\f5\i \cf4 <!-- Right Column: Analytics Panel -->
+\f4\i0 \cf3 \
+    <\cf9 div\cf3  \cf7 class\cf3 =\cf6 "analytics-panel"\cf3 >\
+      <\cf9 AnalyticsPanel\cf3  \cf7 blocks\cf3 =\cf6 \{parsedBlocks\}\cf3  />\
+    </\cf9 div\cf3 >\
+  </\cf9 div\cf3 >\
+</\cf9 div\cf3 >
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs34 \cf2 10. main.js \'96 Svelte Entry Point
+\f0\b0\fs28 \
+\
+By default, Vite\'92s Svelte template includes something similar. Just ensure it mounts the 
+\f6 App.svelte
+\f0 .
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i\fs28 \cf4 // src/main.js
+\f4\i0 \cf3 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf5 import\cf3  App \cf5 from\cf3  \cf6 './App.svelte'\cf3 ;\
+\
+\cf5 const\cf3  app = \cf5 new\cf3  App(\{\
+  \cf7 target\cf3 : document.getElementById(\cf6 'app'\cf3 )\
+\});\
+\
+\cf5 export\cf3  \cf5 default\cf3  app;
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf2 In your 
+\f6 index.html
+\f0 , you\'92ll have:
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f4\fs28 \cf10 <!DOCTYPE \cf5 html\cf10 >\cf3 \
+<\cf9 html\cf3  \cf7 lang\cf3 =\cf6 "en"\cf3 >\
+  <\cf9 head\cf3 >\
+    <\cf9 meta\cf3  \cf7 charset\cf3 =\cf6 "UTF-8"\cf3  />\
+    <\cf9 title\cf3 >Svelte Screenplay App</\cf9 title\cf3 >\
+  </\cf9 head\cf3 >\
+  <\cf9 body\cf3 >\
+    <\cf9 div\cf3  \cf7 id\cf3 =\cf6 "app"\cf3 ></\cf9 div\cf3 >\
+    <\cf9 script\cf3  \cf7 type\cf3 =\cf6 "module"\cf3  \cf7 src\cf3 =\cf6 "/src/main.js"\cf3 ></\cf9 script\cf3 >\
+  </\cf9 body\cf3 >\
+</\cf9 html\cf3 >
+\f3\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs44 \cf2 Running & Extending
+\f0\b0\fs28 \
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f2 \cf2 	1.	
+\f1\b Run Dev Server
+\f0\b0 : 
+\f6 npm run dev
+\f0 \
+
+\f2 	2.	
+\f1\b Open
+\f0\b0  the provided URL, typically {\field{\*\fldinst{HYPERLINK "http://localhost:5173/"}}{\fldrslt http://localhost:5173/}}.\
+
+\f2 	3.	
+\f1\b Try
+\f0\b0  pasting or dropping a small Markdown or text script in the left editor. The middle column shows the formatted screenplay, and the right column shows analytics.\
+
+\f2 	4.	
+\f1\b Toggle Theme
+\f0\b0  with the button or Ctrl+Shift+L.\
+
+\f2 	5.	
+\f1\b Export
+\f0\b0  with Ctrl+E or the 
+\f1\b Export
+\f0\b0  button.\
+
+\f2 	6.	
+\f1\b Adjust
+\f0\b0  the parsing logic in 
+\f6 parseScript.js
+\f0  for your edge cases (e.g., bullet points, advanced stage directions, nested parentheses, etc.).\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs34 \cf2 Next Steps
+\f0\b0\fs28 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f1\b Add Charting
+\f0\b0  in 
+\f6 AnalyticsPanel.svelte
+\f0  via {\field{\*\fldinst{HYPERLINK "https://www.chartjs.org/"}}{\fldrslt Chart.js}} or {\field{\*\fldinst{HYPERLINK "https://apexcharts.com/"}}{\fldrslt ApexCharts}}.\
+	\'95	
+\f1\b Enhance
+\f0\b0  the parser to handle advanced Markdown features or bullet points.\
+	\'95	
+\f1\b Improve
+\f0\b0  PDF export. You can either:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Use {\field{\*\fldinst{HYPERLINK "https://github.com/parallax/jsPDF"}}{\fldrslt jsPDF}} and convert your screenplay to a styled PDF, or\
+	\'95	Provide a \'93Print to PDF\'94 option.\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f1\b Refine
+\f0\b0  the styling to match standard screenwriting more closely (top/bottom margins, scene heading indentation, etc.).\
+	\'95	
+\f1\b Consider
+\f0\b0  in\uc0\u8208 place editing in 
+\f6 ScreenplayView.svelte
+\f0  if you want a WYSIWYG approach (more complex, but user\uc0\u8208 friendly).\
+\
+This skeleton gives you a 
+\f1\b starting point
+\f0\b0 . From here, you can layer in everything from advanced analytics to collaboration features\'97whatever suits your roadmap!}

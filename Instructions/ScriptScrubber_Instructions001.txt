@@ -1,0 +1,656 @@
+Below is a starter Svelte application implementing the core MVP features described in your plan:
+	1.	Local Parsing of a user‐provided Markdown/text script into a structured data model (scene headings, dialogue, etc.).
+	2.	Fountain‐style Rendering in the left pane.
+	3.	Analytics Panel on the right (with basic line/word counts).
+	4.	Light/Dark Theme Toggle.
+	5.	Keyboard Shortcuts (e.g., Ctrl+E to export).
+	6.	File Upload & Debounced Real‐Time Updates in a side‐by‐side text editor scenario.
+
+This skeleton is written using Vite for bundling + Svelte. You can expand it with more components (e.g., charts, PDF export, extended analytics) as you progress. Consider it a foundation to evolve into the final vision.
+
+	Note: This code is only a basic scaffolding; you’ll want to refine the parsing logic, add more robust checks, integrate chart libraries, etc.
+
+1. Project Setup
+
+Step 1: Create a new Svelte + Vite project:
+
+npm create vite@latest my-screenplay-app -- --template svelte
+cd my-screenplay-app
+npm install
+
+Step 2 (Optional): Install any additional libraries you might want, for example:
+
+npm install marked   # For more advanced Markdown parsing (optional)
+npm install jspdf    # For PDF export (optional)
+npm install chart.js # For analytics charts (optional)
+
+Step 3: Replace the default files with the structure below. The main files we’ll show here are:
+	•	src/App.svelte
+	•	src/components/EditorView.svelte
+	•	src/components/ScreenplayView.svelte
+	•	src/components/AnalyticsPanel.svelte
+	•	src/parser/parseScript.js
+	•	src/store/theme.js (for theme switching)
+	•	src/main.js
+
+When done, run:
+
+npm run dev
+
+Then open your browser at http://localhost:5173/ (or similar port) to see your app.
+
+2. File Structure (Example)
+
+my-screenplay-app/
+│
+├─ package.json
+├─ vite.config.js
+├─ src/
+│  ├─ main.js
+│  ├─ App.svelte
+│  ├─ parser/
+│  │  └─ parseScript.js
+│  ├─ store/
+│  │  └─ theme.js
+│  └─ components/
+│     ├─ EditorView.svelte
+│     ├─ ScreenplayView.svelte
+│     └─ AnalyticsPanel.svelte
+└─ public/
+   └─ ... static assets if needed
+
+3. parseScript.js – Basic Parsing Logic
+
+Here’s a simplified parser that demonstrates:
+	•	Detecting scene headings (lines starting with # or uppercase lines).
+	•	Detecting speaker lines (NAME: pattern).
+	•	Treating bracketed lines [Something] as action.
+	•	Otherwise, falling back to action or blank separators.
+
+Feel free to expand/adjust the logic or integrate advanced regex checks.
+
+// src/parser/parseScript.js
+
+export function parseScript(rawText) {
+  const blocks = [];
+  const lines = rawText.split(/\r?\n/);
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmedLine = lines[i].trim();
+
+    if (!trimmedLine) {
+      // Treat blank line as a separator
+      blocks.push({ type: 'separator' });
+      continue;
+    }
+
+    if (isSceneHeading(trimmedLine)) {
+      blocks.push({
+        type: 'sceneHeading',
+        text: extractSceneHeading(trimmedLine),
+      });
+    } else if (isCharacterLine(trimmedLine)) {
+      const { speaker, parenthetical, dialogue } = extractDialogueParts(trimmedLine);
+      blocks.push({
+        type: 'dialogue',
+        speaker,
+        parenthetical, // e.g., (softly)
+        text: dialogue,
+      });
+    } else if (isStageDirection(trimmedLine)) {
+      blocks.push({
+        type: 'action',
+        text: trimmedLine,
+      });
+    } else {
+      // Fallback to action
+      blocks.push({
+        type: 'action',
+        text: trimmedLine,
+      });
+    }
+  }
+
+  return blocks;
+}
+
+// Detect scene heading if line starts with '#' or is uppercase with minimal punctuation:
+function isSceneHeading(line) {
+  if (line.startsWith('#')) return true;
+  // crude check for uppercase line
+  const noPunct = line.replace(/[^\w\s]/g, '');
+  return noPunct === noPunct.toUpperCase() && noPunct.length > 0;
+}
+
+function extractSceneHeading(line) {
+  // If it starts with '#', remove '#' symbols. Otherwise just return as is.
+  return line.replace(/^#+\s*/, '').toUpperCase();
+}
+
+// Check if line matches a pattern like "CHARACTER:" or "**CHARACTER:**"
+function isCharacterLine(line) {
+  // Very simple check: does it end with a colon, ignoring asterisks/spaces?
+  // e.g. "**NAME (something)**: Hello"
+  // Alternatively, use a more advanced regex. This is a naive approach.
+  const regex = /^(\*{0,2})?([A-Z][A-Z\s'\(\)0-9-]*)(\*{0,2})?:/;
+  return regex.test(line);
+}
+
+function extractDialogueParts(line) {
+  // Example: "**HAMILTON (softly):** Hello there"
+  // 1) Remove leading/trailing asterisks
+  // 2) Capture speaker
+  // 3) capture parenthetical if present
+  // 4) capture the remainder as dialogue
+  let speaker = '';
+  let parenthetical = '';
+  let dialogue = '';
+
+  // First, separate everything before the first colon
+  const [beforeColon, ...rest] = line.split(':');
+  const remainder = rest.join(':').trim(); // everything after the colon
+
+  // Remove asterisks from beforeColon
+  const cleanBefore = beforeColon.replace(/\*+/g, '').trim();
+
+  // Attempt to extract parenthetical from speaker portion
+  // e.g. "HAMILTON (softly)" => speaker = HAMILTON, parenthetical = (softly)
+  const match = cleanBefore.match(/^([A-Z0-9\s'\(\)-]+)\s*(\([^)]+\))?\s*$/);
+  if (match) {
+    speaker = match[1].trim();
+    if (match[2]) {
+      parenthetical = match[2].trim(); // e.g. (softly)
+    }
+  } else {
+    // fallback, if something weird
+    speaker = cleanBefore.trim();
+  }
+
+  dialogue = remainder;
+
+  return { speaker: speaker.toUpperCase(), parenthetical, dialogue };
+}
+
+// If line is bracketed or parentheses, treat as stage direction
+function isStageDirection(line) {
+  // e.g. "[Stage direction]" or "(Stage direction)"
+  return (
+    (line.startsWith('[') && line.endsWith(']')) ||
+    (line.startsWith('(') && line.endsWith(')'))
+  );
+}
+
+	Real-world improvement: Use more robust regex or external libraries to handle nested parentheses, bullet points, or special cases.
+
+4. computeAnalytics.js – Basic Analytics
+
+Create a separate helper (or integrate it in parseScript.js) to compute line/word counts:
+
+// src/parser/computeAnalytics.js
+
+export function computeAnalytics(blocks) {
+  const speakers = {};
+  let totalWords = 0;
+  let totalDialogueBlocks = 0;
+
+  for (const block of blocks) {
+    if (block.type === 'dialogue') {
+      const count = wordCount(block.text);
+      if (!speakers[block.speaker]) {
+        speakers[block.speaker] = { wordCount: 0, lineCount: 0 };
+      }
+      speakers[block.speaker].wordCount += count;
+      speakers[block.speaker].lineCount++;
+      totalWords += count;
+      totalDialogueBlocks++;
+    }
+  }
+
+  // Add percentage calculations
+  for (const name in speakers) {
+    speakers[name].wordPct = totalWords > 0
+      ? (speakers[name].wordCount / totalWords) * 100
+      : 0;
+    speakers[name].linePct = totalDialogueBlocks > 0
+      ? (speakers[name].lineCount / totalDialogueBlocks) * 100
+      : 0;
+  }
+
+  return { speakers, totalWords, totalDialogueBlocks };
+}
+
+function wordCount(text) {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+5. theme.js – Simple Light/Dark Store (Optional)
+
+Use a Svelte writable store to manage theme state. This example toggles 'light' ↔ 'dark'.
+
+// src/store/theme.js
+import { writable } from 'svelte/store';
+
+export const theme = writable('light');
+
+export function toggleTheme() {
+  theme.update((current) => (current === 'light' ? 'dark' : 'light'));
+}
+
+In your global CSS (or App.svelte), use [data-theme='dark'] { ... } to style accordingly.
+
+6. EditorView.svelte – Raw Text Editor
+
+Users can paste or drag/drop text here. We’ll emit a scriptText value up to the parent (App) via a Svelte dispatch.
+
+<!-- src/components/EditorView.svelte -->
+<script>
+  import { createEventDispatcher } from 'svelte';
+  import { onMount } from 'svelte';
+
+  const dispatch = createEventDispatcher();
+
+  export let initialText = '';
+
+  let scriptText = initialText;
+  let debounceTimer;
+
+  function handleInput(e) {
+    // Use a debounce to avoid parsing on every keystroke
+    clearTimeout(debounceTimer);
+    scriptText = e.target.value;
+    debounceTimer = setTimeout(() => {
+      dispatch('update', { text: scriptText });
+    }, 400);
+  }
+
+  // Optionally handle file drop
+  function handleFileDrop(e) {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        scriptText = ev.target.result;
+        dispatch('update', { text: scriptText });
+      };
+      reader.readAsText(file);
+    }
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+  }
+</script>
+
+<style>
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+textarea {
+  flex: 1;
+  padding: 0.75rem;
+  font-family: monospace;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  resize: none;
+}
+</style>
+
+<div
+  class="editor-container"
+  on:drop={handleFileDrop}
+  on:dragover={handleDragOver}
+>
+  <textarea
+    bind:value={scriptText}
+    on:input={handleInput}
+    placeholder="Paste or drop your script text here..."
+  />
+</div>
+
+7. ScreenplayView.svelte – Render the Parsed Blocks
+
+A simple read‐only view. Each block is rendered differently based on its type.
+
+<!-- src/components/ScreenplayView.svelte -->
+<script>
+  export let blocks = [];
+</script>
+
+<style>
+.screenplay-container {
+  padding: 1rem;
+  overflow-y: auto;
+  max-height: 100%;
+  font-family: 'Courier', monospace;
+}
+
+/* Example styling for each block type */
+.scene-heading {
+  text-transform: uppercase;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.dialogue-speaker {
+  text-align: center;
+  font-weight: bold;
+  margin-top: 1rem;
+}
+
+.parenthetical {
+  text-align: center;
+  font-style: italic;
+  margin: 0.25rem 0;
+}
+
+.dialogue-text {
+  margin: 0.5rem 0;
+  padding: 0 2rem;
+}
+
+.action {
+  margin: 0.5rem 0;
+  font-style: italic;
+}
+.separator {
+  margin: 0.5rem 0;
+}
+</style>
+
+<div class="screenplay-container">
+  {#each blocks as block}
+    {#if block.type === 'sceneHeading'}
+      <div class="scene-heading">{block.text}</div>
+    {:else if block.type === 'dialogue'}
+      <div class="dialogue-speaker">{block.speaker}</div>
+      {#if block.parenthetical}
+        <div class="parenthetical">{block.parenthetical}</div>
+      {/if}
+      <div class="dialogue-text">{block.text}</div>
+    {:else if block.type === 'action'}
+      <div class="action">{block.text}</div>
+    {:else if block.type === 'separator'}
+      <div class="separator">&nbsp;</div>
+    {:else}
+      <!-- fallback, e.g., action or unknown -->
+      <div class="action">{block.text}</div>
+    {/if}
+  {/each}
+</div>
+
+8. AnalyticsPanel.svelte – Display Basic Stats
+
+We’ll use the computeAnalytics function here to derive speaker data. A real app might show charts, reading time, etc.
+
+<!-- src/components/AnalyticsPanel.svelte -->
+<script>
+  import { computeAnalytics } from '../parser/computeAnalytics';
+
+  export let blocks = [];
+
+  $: stats = computeAnalytics(blocks);
+  $: speakersArray = Object.keys(stats.speakers || {}).map((name) => ({
+    name,
+    ...stats.speakers[name],
+  }));
+
+  // Example WPM setting:
+  let wpm = 150;
+  $: totalReadingTime = stats.totalWords / wpm;
+</script>
+
+<style>
+.analytics-container {
+  padding: 1rem;
+  overflow-y: auto;
+  max-height: 100%;
+  border-left: 1px solid #ccc;
+}
+.speaker-stat {
+  margin-bottom: 0.5rem;
+}
+</style>
+
+<div class="analytics-container">
+  <h3>Analytics</h3>
+  <p>Total words: {stats.totalWords}</p>
+  <p>Total dialogue blocks: {stats.totalDialogueBlocks}</p>
+
+  <div style="margin-top:1rem;">
+    <label>Reading speed (WPM): </label>
+    <input type="number" bind:value={wpm} min="50" max="400" />
+    <p>Approx reading time: {totalReadingTime.toFixed(1)} mins</p>
+  </div>
+
+  <h4 style="margin-top:1rem;">Speakers</h4>
+  {#if speakersArray.length > 0}
+    {#each speakersArray as sp}
+      <div class="speaker-stat">
+        <strong>{sp.name}</strong><br />
+        Words: {sp.wordCount} ({sp.wordPct.toFixed(1)}%)<br />
+        Lines: {sp.lineCount} ({sp.linePct.toFixed(1)}%)
+      </div>
+    {/each}
+  {:else}
+    <p>No dialogue found.</p>
+  {/if}
+</div>
+
+9. App.svelte – The Main Layout
+
+Brings everything together:
+	•	A top bar with a Theme Toggle, Export button, etc.
+	•	Side‐by‐side: EditorView (left) and ScreenplayView + AnalyticsPanel (right).
+
+<!-- src/App.svelte -->
+<script>
+  import { onMount } from 'svelte';
+  import { theme, toggleTheme } from './store/theme';
+  import EditorView from './components/EditorView.svelte';
+  import ScreenplayView from './components/ScreenplayView.svelte';
+  import AnalyticsPanel from './components/AnalyticsPanel.svelte';
+
+  import { parseScript } from './parser/parseScript';
+
+  let rawText = '';
+  let parsedBlocks = [];
+
+  // Keyboard shortcuts
+  function handleKeyDown(e) {
+    // Ctrl+E => export
+    if (e.ctrlKey && e.key === 'e') {
+      e.preventDefault();
+      exportFountain();
+    }
+    // Ctrl+Shift+L => toggle theme
+    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'l') {
+      e.preventDefault();
+      toggleTheme();
+    }
+  }
+
+  // Debounced parse function once rawText changes
+  $: parsedBlocks = parseScript(rawText);
+
+  function onEditorUpdate(e) {
+    rawText = e.detail.text;
+  }
+
+  // Example fountain exporter
+  function exportFountain() {
+    const fountainText = toFountain(parsedBlocks);
+    const blob = new Blob([fountainText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'script.fountain';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function toFountain(blocks) {
+    return blocks
+      .map((block) => {
+        switch (block.type) {
+          case 'sceneHeading':
+            return block.text; // e.g. "INT. HOUSE - DAY"
+          case 'dialogue':
+            let lines = [];
+            lines.push(block.speaker); // all caps
+            if (block.parenthetical) {
+              lines.push(block.parenthetical);
+            }
+            lines.push(block.text);
+            return lines.join('\n');
+          case 'action':
+            return block.text;
+          case 'separator':
+            return '';
+          default:
+            return block.text;
+        }
+      })
+      .join('\n\n');
+  }
+</script>
+
+<style>
+:global(:root) {
+  --bg-color-light: #ffffff;
+  --text-color-light: #000000;
+
+  --bg-color-dark: #1e1e1e;
+  --text-color-dark: #dddddd;
+}
+
+:global([data-theme='light']) {
+  background-color: var(--bg-color-light);
+  color: var(--text-color-light);
+}
+
+:global([data-theme='dark']) {
+  background-color: var(--bg-color-dark);
+  color: var(--text-color-dark);
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.top-bar {
+  flex: 0 0 auto;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.main-content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr 300px;
+  /* left: editor, middle: screenplay, right: analytics */
+}
+
+.editor-panel {
+  border-right: 1px solid #ccc;
+}
+
+.screenplay-panel {
+  border-right: 1px solid #ccc;
+}
+
+.analytics-panel {
+  /* optional styles */
+}
+</style>
+
+<svelte:window on:keydown={handleKeyDown} />
+
+<!-- Apply theme data-attribute globally -->
+<svelte:window bind:documentElement.dataset.theme={$theme} />
+
+<div class="app-container">
+  <div class="top-bar">
+    <div>
+      <button on:click={toggleTheme}>Toggle Theme</button>
+      <button on:click={exportFountain}>Export (.fountain)</button>
+    </div>
+    <div>
+      <!-- Optional: show current theme -->
+      Current theme: {$theme}
+    </div>
+  </div>
+
+  <div class="main-content">
+    <!-- Left Column: Editor -->
+    <div class="editor-panel">
+      <EditorView on:update={onEditorUpdate} />
+    </div>
+
+    <!-- Middle Column: Screenplay View -->
+    <div class="screenplay-panel">
+      <ScreenplayView {parsedBlocks} />
+    </div>
+
+    <!-- Right Column: Analytics Panel -->
+    <div class="analytics-panel">
+      <AnalyticsPanel blocks={parsedBlocks} />
+    </div>
+  </div>
+</div>
+
+10. main.js – Svelte Entry Point
+
+By default, Vite’s Svelte template includes something similar. Just ensure it mounts the App.svelte.
+
+// src/main.js
+import App from './App.svelte';
+
+const app = new App({
+  target: document.getElementById('app')
+});
+
+export default app;
+
+In your index.html, you’ll have:
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Svelte Screenplay App</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+
+Running & Extending
+	1.	Run Dev Server: npm run dev
+	2.	Open the provided URL, typically http://localhost:5173/.
+	3.	Try pasting or dropping a small Markdown or text script in the left editor. The middle column shows the formatted screenplay, and the right column shows analytics.
+	4.	Toggle Theme with the button or Ctrl+Shift+L.
+	5.	Export with Ctrl+E or the Export button.
+	6.	Adjust the parsing logic in parseScript.js for your edge cases (e.g., bullet points, advanced stage directions, nested parentheses, etc.).
+
+Next Steps
+	•	Add Charting in AnalyticsPanel.svelte via Chart.js or ApexCharts.
+	•	Enhance the parser to handle advanced Markdown features or bullet points.
+	•	Improve PDF export. You can either:
+	•	Use jsPDF and convert your screenplay to a styled PDF, or
+	•	Provide a “Print to PDF” option.
+	•	Refine the styling to match standard screenwriting more closely (top/bottom margins, scene heading indentation, etc.).
+	•	Consider in‐place editing in ScreenplayView.svelte if you want a WYSIWYG approach (more complex, but user‐friendly).
+
+This skeleton gives you a starting point. From here, you can layer in everything from advanced analytics to collaboration features—whatever suits your roadmap!

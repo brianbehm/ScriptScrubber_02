@@ -1,0 +1,702 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2820
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 .SFNS-Regular;\f1\fnil\fcharset0 .SFNS-Bold;\f2\fswiss\fcharset0 Helvetica;
+\f3\fnil\fcharset0 .AppleSystemUIFontMonospaced-Regular;\f4\froman\fcharset0 TimesNewRomanPSMT;\f5\fmodern\fcharset0 Courier-Oblique;
+\f6\fmodern\fcharset0 Courier;}
+{\colortbl;\red255\green255\blue255;\red14\green14\blue14;\red74\green80\blue93;\red155\green162\blue177;
+\red184\green93\blue213;\red136\green185\blue102;\red197\green136\blue83;\red214\green85\blue98;\red72\green168\blue181;
+\red81\green156\blue233;}
+{\*\expandedcolortbl;;\cssrgb\c6700\c6700\c6700;\cssrgb\c36078\c38824\c43922;\cssrgb\c67059\c69804\c74902;
+\cssrgb\c77647\c47059\c86667;\cssrgb\c59608\c76471\c47451;\cssrgb\c81961\c60392\c40000;\cssrgb\c87843\c42353\c45882;\cssrgb\c33725\c71373\c76078;
+\cssrgb\c38039\c68235\c93333;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf2 Below are 
+\f1\b practical next steps
+\f0\b0  you can take to evolve the MVP into a more powerful and user\uc0\u8208 friendly tool. Each step includes 
+\f1\b ideas
+\f0\b0 , 
+\f1\b implementation notes
+\f0\b0 , and 
+\f1\b sample code snippets
+\f0\b0  where relevant.
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs44 \cf2 1. Enhanced Parsing & Handling Special Cases
+\f0\b0\fs28 \
+\
+Right now, the parser (
+\f3 parseScript.js
+\f0 ) is fairly simple. You can improve it to handle more complex or edge cases:\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	1.	
+\f1\b Bullet Points or Markdown Lists
+\f0\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Decide whether to ignore them or store them in a separate \'93notes\'94 block.
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i\fs28 \cf3 // Example snippet for ignoring bullet points:
+\f6\i0 \cf4 \
+\cf5 if\cf4  (trimmedLine.startsWith(\cf6 '- '\cf4 ) || trimmedLine.startsWith(\cf6 '* '\cf4 )) \{\
+  
+\f5\i \cf3 // Instead of pushing to blocks, either skip or store them as 'notes'
+\f6\i0 \cf4 \
+  blocks.push(\{ \cf7 type\cf4 : \cf6 'note'\cf4 , \cf7 text\cf4 : trimmedLine.slice(\cf7 2\cf4 ).trim() \});\
+  \cf5 continue\cf4 ;\
+\}
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf2 \
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	2.	
+\f1\b More Robust Scene Heading Detection
+\f0\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Check for patterns like 
+\f3 INT./EXT. SOMETHING - DAY/NIGHT
+\f0 .\
+	\'95	If you prefer a purely uppercase check, refine it to allow certain punctuation (like 
+\f3 INT., EXT., \'96
+\f0 ).\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	3.	
+\f1\b Nested or Complex Parentheticals
+\f0\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	E.g., 
+\f3 (HAMILTON (whispering): This is tricky)
+\f0 .\
+	\'95	If you need real nesting logic, you might need a more advanced parser or carefully manage substring indices.\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	4.	
+\f1\b Inline Stage Directions
+\f0\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Sometimes stage directions appear inline with dialogue, e.g., 
+\f3 Hello there (smiling).
+\f0 .\
+	\'95	Decide if you want to split them out as a separate block or keep them inline.\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	5.	
+\f1\b Bullet vs. Numbered Lists
+\f0\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	If you have a \'93pre\uc0\u8208 script\'94 section with a numbered list, decide whether it\'92s included in the final screenplay.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b \cf2 Implementation Tip:
+\f0\b0 \
+You could parse the entire text with a Markdown parser (like 
+\f3 marked
+\f0  or 
+\f3 markdown-it
+\f0 ), then transform its AST (Abstract Syntax Tree) into your screenplay blocks. This approach is more complex but might yield cleaner handling of bullet points, headings, etc.
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs44 \cf2 2. In\uc0\u8208 Place Editing (WYSIWYG Style)
+\f0\b0\fs28 \
+\
+Right now, the MVP uses a side\uc0\u8208 by\u8208 side text editor. If you want direct editing 
+\f1\b in the rendered screenplay
+\f0\b0 , try:\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	1.	
+\f1\b Make Each Block Clickable
+\f0\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	When the user clicks on, say, a dialogue block, replace the 
+\f3 <div>
+\f0  with an 
+\f3 <input>
+\f0  or 
+\f3 <textarea>
+\f0  so they can edit it.\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	2.	
+\f1\b Update State on Blur
+\f0\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Once the user finishes editing, you update that block in the 
+\f3 parsedBlocks
+\f0  array, then re\uc0\u8208 generate the raw text (or keep only the JSON structure if you prefer).\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b \cf2 Example
+\f0\b0  (in 
+\f3 ScreenplayView.svelte
+\f0 , concept sketch):
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f6\fs28 \cf4 <\cf8 script\cf4 >\
+  \cf5 export\cf4  \cf5 let\cf4  blocks = [];\
+  \cf5 import\cf4  \{ createEventDispatcher \} \cf5 from\cf4  \cf6 'svelte'\cf4 ;\
+  \
+  \cf5 const\cf4  dispatch = createEventDispatcher();\
+\
+  \cf5 let\cf4  editingIndex = \cf9 null\cf4 ;\
+  \cf5 let\cf4  editText = \cf6 ""\cf4 ;\
+\
+  \cf5 function\cf4  startEditing(index, currentText) \{\
+    editingIndex = index;\
+    editText = currentText;\
+  \}\
+\
+  \cf5 function\cf4  finishEditing(index) \{\
+    dispatch(\cf6 'updateBlock'\cf4 , \{ index, \cf7 newText\cf4 : editText \});\
+    editingIndex = \cf9 null\cf4 ;\
+  \}\
+</\cf8 script\cf4 >\
+\
+\{#each blocks as block, i\}\
+  \{#if editingIndex === i\}\
+    
+\f5\i \cf3 <!-- If editing this block, show a textarea -->
+\f6\i0 \cf4 \
+    <\cf8 textarea\cf4 \
+      \cf7 bind:value\cf4 =\cf6 \{editText\}\cf4 \
+      \cf7 on:blur\cf4 =\cf6 \{()\cf4  => finishEditing(i)\}\
+      autofocus\
+    ></\cf8 textarea\cf4 >\
+  \{:else\}\
+    
+\f5\i \cf3 <!-- Otherwise, normal display -->
+\f6\i0 \cf4 \
+    <\cf8 div\cf4  \cf7 on:dblclick\cf4 =\cf6 \{()\cf4  => startEditing(i, block.text)\}>\
+      \{#if block.type === 'dialogue'\}\
+        <\cf8 div\cf4  \cf7 class\cf4 =\cf6 "dialogue-speaker"\cf4 >\{block.speaker\}</\cf8 div\cf4 >\
+        \{#if block.parenthetical\}\
+          <\cf8 div\cf4  \cf7 class\cf4 =\cf6 "parenthetical"\cf4 >\{block.parenthetical\}</\cf8 div\cf4 >\
+        \{/if\}\
+        <\cf8 div\cf4  \cf7 class\cf4 =\cf6 "dialogue-text"\cf4 >\{block.text\}</\cf8 div\cf4 >\
+      \{:else if block.type === 'action'\}\
+        <\cf8 div\cf4  \cf7 class\cf4 =\cf6 "action"\cf4 >\{block.text\}</\cf8 div\cf4 >\
+      \{:else if block.type === 'sceneHeading'\}\
+        <\cf8 div\cf4  \cf7 class\cf4 =\cf6 "scene-heading"\cf4 >\{block.text\}</\cf8 div\cf4 >\
+      \{:else if block.type === 'separator'\}\
+        <\cf8 div\cf4  \cf7 class\cf4 =\cf6 "separator"\cf4 >\cf10 &nbsp;\cf4 </\cf8 div\cf4 >\
+      \{:else\}\
+        <\cf8 div\cf4  \cf7 class\cf4 =\cf6 "action"\cf4 >\{block.text\}</\cf8 div\cf4 >\
+      \{/if\}\
+    </\cf8 div\cf4 >\
+  \{/if\}\
+\{/each\}
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf2 Then in 
+\f3 App.svelte
+\f0 , handle 
+\f3 on:updateBlock
+\f0  to change the parsedBlocks accordingly:
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f6\fs28 \cf4 <\cf8 ScreenplayView\cf4 \
+  \{\cf7 parsedBlocks\cf4 \}\
+  \cf7 on:updateBlock\cf4 =\cf6 \{(e)\cf4  => \{\
+    const \{ index, newText \} = e.detail;\
+    parsedBlocks[index].text = newText;\
+    // Optionally re-parse or re-compute analytics if needed\
+  \}\}\
+/>
+\f2\fs24 \cf0 \
+\
+\pard\tx300\li300\fi-300\sl324\slmult1\partightenfactor0
+
+\f0\fs28 \cf2 	
+\f1\b Note
+\f0\b0 : If the user changes a line from \'93action\'94 to \'93dialogue,\'94 you\'92ll need logic to detect that and change the block\'92s type/speaker. This can get complicated quickly.
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs44 \cf2 3. Analytics Charts Integration
+\f0\b0\fs28 \
+\
+You already have basic data. Next, visualize it with 
+\f1\b Chart.js
+\f0\b0  or 
+\f1\b ApexCharts
+\f0\b0 . For example, if you install 
+\f3 chart.js
+\f0 , you can create a bar or pie chart of word distribution among speakers.\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	1.	
+\f1\b Install
+\f0\b0 :
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f6\fs28 \cf4 npm install chart.js
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf2 \
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	2.	
+\f1\b Create
+\f0\b0  a new component, e.g., 
+\f3 SpeakerChart.svelte
+\f0 :
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f6\fs28 \cf4 <\cf8 script\cf4 >\
+  \cf5 import\cf4  \{ onMount \} \cf5 from\cf4  \cf6 'svelte'\cf4 ;\
+  \cf5 import\cf4  Chart \cf5 from\cf4  \cf6 'chart.js/auto'\cf4 ;\
+\
+  \cf5 export\cf4  \cf5 let\cf4  speakersData = []; \
+  
+\f5\i \cf3 // e.g. [\{ name: 'HAMILTON', wordCount: 100, wordPct: 25 \}, ...]
+\f6\i0 \cf4 \
+\
+  \cf5 let\cf4  chartCanvas;\
+  \cf5 let\cf4  chartInstance;\
+\
+  onMount(() => \{\
+    chartInstance = \cf5 new\cf4  Chart(chartCanvas, \{\
+      \cf7 type\cf4 : \cf6 'pie'\cf4 ,\
+      \cf7 data\cf4 : \{\
+        \cf7 labels\cf4 : speakersData.map(sp => sp.name),\
+        \cf7 datasets\cf4 : [\{\
+          \cf7 data\cf4 : speakersData.map(sp => sp.wordCount),\
+          \cf7 backgroundColor\cf4 : [\cf6 'red'\cf4 ,\cf6 'blue'\cf4 ,\cf6 'green'\cf4 ,\cf6 'orange'\cf4 ,\cf6 'purple'\cf4 ] 
+\f5\i \cf3 // or dynamic
+\f6\i0 \cf4 \
+        \}]\
+      \},\
+      \cf7 options\cf4 : \{\
+        
+\f5\i \cf3 // options if needed
+\f6\i0 \cf4 \
+      \}\
+    \});\
+  \});\
+\
+  
+\f5\i \cf3 // If data changes dynamically, you might re-render or update the chart
+\f6\i0 \cf4 \
+  \cf7 $\cf4 : \cf5 if\cf4  (chartInstance && speakersData) \{\
+    chartInstance.data.labels = speakersData.map(sp => sp.name);\
+    chartInstance.data.datasets[\cf7 0\cf4 ].data = speakersData.map(sp => sp.wordCount);\
+    chartInstance.update();\
+  \}\
+</\cf8 script\cf4 >\
+\
+<\cf8 canvas\cf4  \cf7 bind:this\cf4 =\cf6 \{chartCanvas\}\cf4  \cf7 width\cf4 =\cf6 "300"\cf4  \cf7 height\cf4 =\cf6 "300"\cf4 ></\cf8 canvas\cf4 >
+\f2\fs24 \cf0 \
+\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4\fs28 \cf2 	3.	
+\f1\b Use
+\f0\b0  this 
+\f3 SpeakerChart.svelte
+\f0  in 
+\f3 AnalyticsPanel.svelte
+\f0 :
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f6\fs28 \cf4 <\cf8 script\cf4 >\
+  \cf5 import\cf4  SpeakerChart \cf5 from\cf4  \cf6 './SpeakerChart.svelte'\cf4 ;\
+  
+\f5\i \cf3 // ... other imports
+\f6\i0 \cf4 \
+</\cf8 script\cf4 >\
+\
+
+\f5\i \cf3 <!-- Inside your panel: -->
+\f6\i0 \cf4 \
+<\cf8 SpeakerChart\cf4  \cf7 speakersData\cf4 =\cf6 \{speakersArray\}\cf4  />
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf2 Now you have a pie chart (or bar chart) showing word distribution among speakers. You can similarly display line counts or reading\uc0\u8208 time comparisons.
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs44 \cf2 4. PDF Export with jsPDF
+\f0\b0\fs28 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs30 \cf2 Option A: Direct PDF Generation
+\f0\b0\fs28 \
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	1.	
+\f1\b Install
+\f0\b0  
+\f3 jspdf
+\f0 :
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f6\fs28 \cf4 npm install jspdf
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf2 \
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	2.	
+\f1\b Create
+\f0\b0  a function in 
+\f3 App.svelte
+\f0  or a separate helper, e.g. 
+\f3 exportPDF.js
+\f0 , that loops over your 
+\f3 blocks
+\f0  and writes them to a PDF:
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i\fs28 \cf3 // src/parser/exportPDF.js
+\f6\i0 \cf4 \
+\cf5 import\cf4  jsPDF \cf5 from\cf4  \cf6 'jspdf'\cf4 ;\
+\
+\cf5 export\cf4  \cf5 function\cf4  exportToPDF(blocks) \{\
+  \cf5 const\cf4  doc = \cf5 new\cf4  jsPDF(\{ \cf7 unit\cf4 : \cf6 'pt'\cf4 , \cf7 format\cf4 : \cf6 'letter'\cf4  \});\
+  \cf5 let\cf4  yPos = \cf7 50\cf4 ;\
+\
+  blocks.forEach((block) => \{\
+    \cf5 const\cf4  lineHeight = \cf7 14\cf4 ;\
+    \cf5 let\cf4  text = \cf6 ''\cf4 ;\
+    \cf5 switch\cf4  (block.type) \{\
+      \cf5 case\cf4  \cf6 'sceneHeading'\cf4 :\
+        text = block.text;\
+        doc.setFontSize(\cf7 12\cf4 );\
+        doc.setFont(\cf9 undefined\cf4 , \cf6 'bold'\cf4 );\
+        \cf5 break\cf4 ;\
+      \cf5 case\cf4  \cf6 'dialogue'\cf4 :\
+        
+\f5\i \cf3 // Possibly center speaker, indent dialogue, etc.
+\f6\i0 \cf4 \
+        doc.setFontSize(\cf7 11\cf4 );\
+        doc.setFont(\cf9 undefined\cf4 , \cf6 'bold'\cf4 );\
+        doc.text(block.speaker, \cf7 300\cf4 , yPos, \{ \cf7 align\cf4 : \cf6 'center'\cf4  \});\
+        yPos += lineHeight;\
+        \cf5 if\cf4  (block.parenthetical) \{\
+          doc.setFontSize(\cf7 10\cf4 );\
+          doc.setFont(\cf9 undefined\cf4 , \cf6 'italic'\cf4 );\
+          doc.text(block.parenthetical, \cf7 300\cf4 , yPos, \{ \cf7 align\cf4 : \cf6 'center'\cf4  \});\
+          yPos += lineHeight;\
+        \}\
+        doc.setFontSize(\cf7 11\cf4 );\
+        doc.setFont(\cf9 undefined\cf4 , \cf6 'normal'\cf4 );\
+        text = block.text;\
+        \cf5 break\cf4 ;\
+      \cf5 case\cf4  \cf6 'action'\cf4 :\
+        doc.setFontSize(\cf7 10\cf4 );\
+        doc.setFont(\cf9 undefined\cf4 , \cf6 'italic'\cf4 );\
+        text = block.text;\
+        \cf5 break\cf4 ;\
+      \cf7 default\cf4 :\
+        doc.setFontSize(\cf7 10\cf4 );\
+        doc.setFont(\cf9 undefined\cf4 , \cf6 'normal'\cf4 );\
+        text = block.text;\
+        \cf5 break\cf4 ;\
+    \}\
+\
+    
+\f5\i \cf3 // Splitting text if it's too long for one line
+\f6\i0 \cf4 \
+    \cf5 const\cf4  lines = doc.splitTextToSize(text, \cf7 400\cf4 );\
+    lines.forEach((line) => \{\
+      doc.text(line, \cf7 100\cf4 , yPos);\
+      yPos += lineHeight;\
+    \});\
+\
+    
+\f5\i \cf3 // Add extra spacing between blocks
+\f6\i0 \cf4 \
+    yPos += lineHeight;\
+    \cf5 if\cf4  (yPos > \cf7 700\cf4 ) \{\
+      
+\f5\i \cf3 // basic check for page break
+\f6\i0 \cf4 \
+      doc.addPage();\
+      yPos = \cf7 50\cf4 ;\
+    \}\
+  \});\
+\
+  doc.save(\cf6 'script.pdf'\cf4 );\
+\}
+\f2\fs24 \cf0 \
+\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4\fs28 \cf2 	3.	
+\f1\b Call
+\f0\b0  
+\f3 exportToPDF
+\f0  from your 
+\f3 App.svelte
+\f0  (or a button click). This approach is 
+\f1\b rudimentary
+\f0\b0  but demonstrates how to structure the PDF with custom fonts, alignment, etc.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs30 \cf2 Option B: Print to PDF
+\f0\b0\fs28 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	The user opens a print dialog from the browser, and your page is styled for printing via CSS.\
+	\'95	This yields a more \'93faithful\'94 representation of how your Svelte components look.\
+	\'95	Just provide a \'93Print to PDF\'94 button that calls 
+\f3 window.print()
+\f0 .
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs44 \cf2 5. Performance & Progress Indicators
+\f0\b0\fs28 \
+\
+If you handle large scripts (~10k words or more), consider:\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	1.	
+\f1\b Chunked Parsing
+\f0\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Instead of splitting text in one go, parse in small batches (e.g., 500 lines at a time).\
+	\'95	Update a progress bar as you go.\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	2.	
+\f1\b Worker Threads
+\f0\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	You could parse inside a Web Worker to avoid blocking the main UI. This is more advanced but keeps the interface responsive.\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	3.	
+\f1\b Progress Bar
+\f0\b0  Implementation Sketch:
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f5\i\fs28 \cf3 <!-- In App.svelte or a dedicated component -->
+\f6\i0 \cf4 \
+<\cf8 script\cf4 >\
+  \cf5 import\cf4  \{ parseScript \} \cf5 from\cf4  \cf6 './parser/parseScript'\cf4 ;\
+  \cf5 let\cf4  progress = \cf7 0\cf4 ;\
+\
+  \cf5 async\cf4  \cf5 function\cf4  parseWithProgress(rawText) \{\
+    progress = \cf7 0\cf4 ;\
+    \cf5 const\cf4  lines = rawText.split(\cf6 /\\r?\\n/\cf4 );\
+    
+\f5\i \cf3 // chunk size
+\f6\i0 \cf4 \
+    \cf5 let\cf4  chunkSize = \cf7 100\cf4 ;\
+    \cf5 let\cf4  blocks = [];\
+    \cf5 for\cf4  (\cf5 let\cf4  i = \cf7 0\cf4 ; i < lines.length; i += chunkSize) \{\
+      \cf5 const\cf4  slice = lines.slice(i, i + chunkSize);\
+      
+\f5\i \cf3 // parse partial
+\f6\i0 \cf4 \
+      blocks = blocks.concat(parseChunk(slice)); \
+      
+\f5\i \cf3 // update progress
+\f6\i0 \cf4 \
+      progress = Math.round(((i + chunkSize) / lines.length) * \cf7 100\cf4 );\
+      \cf5 await\cf4  tick(); 
+\f5\i \cf3 // or a small setTimeout to yield
+\f6\i0 \cf4 \
+    \}\
+    \cf5 return\cf4  blocks;\
+  \}\
+\
+  \cf5 function\cf4  parseChunk(lines) \{\
+    
+\f5\i \cf3 // your parse logic for an array of lines
+\f6\i0 \cf4 \
+    
+\f5\i \cf3 // ...
+\f6\i0 \cf4 \
+  \}\
+</\cf8 script\cf4 >\
+\
+<\cf8 div\cf4 >\
+  <\cf8 progress\cf4  \cf7 value\cf4 =\cf6 \{progress\}\cf4  \cf7 max\cf4 =\cf6 "100"\cf4 ></\cf8 progress\cf4 >\
+</\cf8 div\cf4 >
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf2 This is a simplified example. For a robust approach, you\'92d refactor your 
+\f3 parseScript
+\f0  logic to parse subsets of lines and combine results.
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs44 \cf2 6. Testing & Validation
+\f0\b0\fs28 \
+\
+As your parser grows more complex, add unit tests with a framework like 
+\f1\b Vitest
+\f0\b0  (works seamlessly with Vite) or 
+\f1\b Jest
+\f0\b0 :\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	1.	
+\f1\b Install
+\f0\b0 :
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f6\fs28 \cf4 npm install --save-dev vitest
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf2 \
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	2.	
+\f1\b Write
+\f0\b0  tests in 
+\f3 src/parser/parseScript.test.js
+\f0 :
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f6\fs28 \cf5 import\cf4  \{ describe, it, expect \} \cf5 from\cf4  \cf6 'vitest'\cf4 ;\
+\cf5 import\cf4  \{ parseScript \} \cf5 from\cf4  \cf6 './parseScript'\cf4 ;\
+\
+describe(\cf6 'parseScript'\cf4 , () => \{\
+  it(\cf6 'handles scene headings starting with #'\cf4 , () => \{\
+    \cf5 const\cf4  input = \cf6 '# ACT 1\\n\\nHello there'\cf4 ;\
+    \cf5 const\cf4  blocks = parseScript(input);\
+    expect(blocks[\cf7 0\cf4 ].type).toBe(\cf6 'sceneHeading'\cf4 );\
+    expect(blocks[\cf7 0\cf4 ].text).toBe(\cf6 'ACT 1'\cf4 );\
+  \});\
+\
+  it(\cf6 'recognizes a dialogue line'\cf4 , () => \{\
+    \cf5 const\cf4  input = \cf6 'HAMILTON: Hello world'\cf4 ;\
+    \cf5 const\cf4  blocks = parseScript(input);\
+    expect(blocks[\cf7 0\cf4 ].type).toBe(\cf6 'dialogue'\cf4 );\
+    expect(blocks[\cf7 0\cf4 ].speaker).toBe(\cf6 'HAMILTON'\cf4 );\
+  \});\
+\
+  
+\f5\i \cf3 // ... more tests
+\f6\i0 \cf4 \
+\});
+\f2\fs24 \cf0 \
+\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4\fs28 \cf2 	3.	
+\f1\b Run
+\f0\b0  tests:
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f6\fs28 \cf4 npx vitest
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf2 \
+\
+This ensures that as you add features or fix edge cases, you avoid regressions.
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs44 \cf2 7. Collaboration or Cloud Storage (Future)
+\f0\b0\fs28 \
+\
+Finally, if you want multi\uc0\u8208 user editing or saving to the cloud:\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	1.	
+\f1\b Realtime
+\f0\b0  with something like {\field{\*\fldinst{HYPERLINK "https://docs.yjs.dev/"}}{\fldrslt Yjs}} or {\field{\*\fldinst{HYPERLINK "https://github.com/share/sharedb"}}{\fldrslt ShareDB}}.\
+
+\f4 	2.	
+\f1\b Cloud Storage
+\f0\b0  with an API or 
+\f3 firebase/firestore
+\f0 .\
+
+\f4 	3.	You\'92d need an actual server or serverless function environment. This goes beyond the scope of \'93local only\'94 but is a natural next step once your local MVP is stable.
+\f2\fs24 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs34 \cf2 Summary of the Next Steps
+\f0\b0\fs28 \
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f4 \cf2 	1.	
+\f1\b Enhanced Parser
+\f0\b0 : Handle bullet points, headings, nested parentheticals, inline stage directions. Possibly integrate a Markdown parser for robust transformations.\
+
+\f4 	2.	
+\f1\b In\uc0\u8208 Place Editing
+\f0\b0 : Allow users to edit blocks directly in the rendered screenplay for a WYSIWYG experience.\
+
+\f4 	3.	
+\f1\b Analytics Charts
+\f0\b0 : Add visual charts (pie/bar) with Chart.js or ApexCharts for word counts, line distribution, reading time comparisons, etc.\
+
+\f4 	4.	
+\f1\b PDF Export
+\f0\b0 : Use jsPDF for custom layout or \'93Print to PDF\'94 with tailored print CSS.\
+
+\f4 	5.	
+\f1\b Performance & Progress
+\f0\b0 : Implement chunked parsing or Web Workers for large scripts, plus a progress bar for user feedback.\
+
+\f4 	6.	
+\f1\b Tests & Validation
+\f0\b0 : Use Vitest (or Jest) for parser logic to ensure correctness.\
+
+\f4 	7.	
+\f1\b Collaboration/Cloud
+\f0\b0 : In the future, consider real\uc0\u8208 time multi\u8208 user editing or cloud saves, which requires a back end.\
+\
+By tackling these items step by step, you can incrementally transform your MVP into a feature\uc0\u8208 rich, high\u8208 performance script editing and analytics platform! If you have additional questions about any specific step\'97or if you want deeper code samples for a particular feature\'97just let me know.}
